@@ -1,0 +1,18 @@
+bin/
+obj/
+*.user
+*.cache
+*.log
+
+# Ef Core
+Migrations/
+
+# VS Code
+.vscode/
+
+# Visual Studio
+*.suo
+*.pdb
+
+# Sistema
+Thumbs.db
