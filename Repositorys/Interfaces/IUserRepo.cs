@@ -6,6 +6,10 @@ namespace MaisGuinchos.Repositorys.Interfaces
     {
         public List<User> GetAllUsers();
 
-        public User AddUser(User user);
+        public Task<User> GetUserByEmail(string email);
+
+        public Task<User> GetUserById(int id);
+
+        public Task<User> AddUser(User user);
     }
 }

@@ -31,23 +31,31 @@ namespace MaisGuinchos.Controllers
 
 
         [HttpGet("{id}")]
-        public IActionResult GetUserById(int id) //ActionResult<User>
+        public async Task<IActionResult> GetUserById(int id)
         {
-            return Ok();
+            var user = await _userService.GetUserById(id);
+            if (user == null) return NotFound();
+            return Ok(user);
         }
 
         [HttpPost]
-        public IActionResult AddUser(User user)
+        public async Task<IActionResult> AddUser(User user)
         {
-            var userAdd = _userService.AddUser(user);
-
-            if (userAdd == null)
+            try
             {
-                return BadRequest("Não foi possivel adicionar o usuário");
+                var userAdd = await _userService.AddUser(user);
+
+                if (userAdd == null)
+                {
+                    return BadRequest("Não foi possivel adicionar o usuário");
+                }
+
+                return CreatedAtAction(nameof(GetUserById), new {id = userAdd.Id}, userAdd);
             }
-
-            return CreatedAtAction(userAdd.Name, userAdd);
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro interno do servidor: {ex.Message}");
+            }
         }
-
     }
 }

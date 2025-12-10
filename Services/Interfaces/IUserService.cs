@@ -6,6 +6,8 @@ namespace MaisGuinchos.Services.Interfaces
     {
         public List<User> GetAllUsers();
 
-        public User AddUser(User user);
+        public Task<User> GetUserById(int id); 
+
+        public Task<User> AddUser(User user);
     }
 }
