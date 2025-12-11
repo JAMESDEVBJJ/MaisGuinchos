@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MaisGuinchos.Models;
 using MaisGuinchos.Services;
 using MaisGuinchos.Services.Interfaces;
+using MaisGuinchos.Dtos;
 
 namespace MaisGuinchos.Controllers
 {
@@ -57,5 +58,11 @@ namespace MaisGuinchos.Controllers
                 return StatusCode(500, $"Erro interno do servidor: {ex.Message}");
             }
         }
+
+/*        [HttpPut]
+        public async Task<IActionResult> UpdateUser(UpdUserDto userUpd)
+        {
+
+        }*/
     }
 }

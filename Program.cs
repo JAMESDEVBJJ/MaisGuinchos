@@ -11,6 +11,7 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder
 builder.Services.AddOpenApi();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepo, UserRepo>();
+builder.Services.AddHttpClient<IMapsService, MapsService>();
 builder.Services.AddControllers();          
 builder.Services.AddEndpointsApiExplorer();
 
