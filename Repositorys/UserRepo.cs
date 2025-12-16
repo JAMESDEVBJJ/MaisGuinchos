@@ -35,12 +35,24 @@ namespace MaisGuinchos.Repositorys
             return user;
         }
 
+        public async Task<User?> GetUserByCpf(string cpf)
+        {
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Cpf == cpf);
+
+            return user;
+        }
+
         public async Task<User> AddUser(User user)
         {
             _dbContext.Users.Add(user);
             _dbContext.SaveChanges();
 
             return user;
+        }
+
+        public async Task Save()
+        {
+            _dbContext.SaveChanges();
         }
     }
 }

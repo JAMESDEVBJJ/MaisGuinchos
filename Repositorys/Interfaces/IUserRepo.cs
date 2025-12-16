@@ -8,8 +8,11 @@ namespace MaisGuinchos.Repositorys.Interfaces
 
         public Task<User> GetUserByEmail(string email);
 
+        public Task<User> GetUserByCpf(string cpf);
+
         public Task<User> GetUserById(int id);
 
         public Task<User> AddUser(User user);
+        public Task Save();
     }
 }

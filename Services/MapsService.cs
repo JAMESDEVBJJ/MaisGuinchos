@@ -1,5 +1,7 @@
 ﻿using MaisGuinchos.Dtos;
+using MaisGuinchos.Infrastructure.http.OSRM;
 using MaisGuinchos.Services.Interfaces;
+using System.Text.Json;
 using static System.Net.WebRequestMethods;
 
 namespace MaisGuinchos.Services
@@ -22,7 +24,7 @@ namespace MaisGuinchos.Services
 
             var content = await response.Content.ReadAsStringAsync();
 
-            return System.Text.Json.JsonSerializer.Deserialize<List<NominatimReturnDTO>>(content);
+            return JsonSerializer.Deserialize<List<NominatimReturnDTO>>(content);
         }
 
         public async Task<RouteDTO>? GetRouteDistance(string user, string guincho)
@@ -33,7 +35,15 @@ namespace MaisGuinchos.Services
 
             var content = await response.Content.ReadAsStringAsync();
 
-            return System.Text.Json.JsonSerializer.Deserialize<RouteDTO>(content);
+            var osrmReturn = JsonSerializer.Deserialize<OsrmReponse>(content);
+
+            var osrmData = new RouteDTO
+            {
+                durationMin = osrmReturn?.routes?[0].duration / 60,
+                distanceKm = osrmReturn?.routes?[0].distance / 1000
+            };
+
+            return osrmData;
         }
     }
 }

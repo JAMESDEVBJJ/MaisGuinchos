@@ -4,6 +4,7 @@ using MaisGuinchos.Models;
 using MaisGuinchos.Services;
 using MaisGuinchos.Services.Interfaces;
 using MaisGuinchos.Dtos;
+using Microsoft.AspNetCore.Routing.Constraints;
 
 namespace MaisGuinchos.Controllers
 {
@@ -59,10 +60,12 @@ namespace MaisGuinchos.Controllers
             }
         }
 
-/*        [HttpPut]
-        public async Task<IActionResult> UpdateUser(UpdUserDto userUpd)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser([FromBody] UpdUserDto userUpd, [FromRoute] int id)
         {
+            var updatedUser = await _userService.UpdateUser(userUpd, id);
 
-        }*/
+            return Ok(updatedUser);
+        }
     }
 }

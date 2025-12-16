@@ -2,8 +2,8 @@
 {
     public class RouteDTO
     {
-        public double? distance { get; set; }
+        public double? distanceKm { get; set; }
 
-        public double? duration { get; set; }
+        public double? durationMin { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using MaisGuinchos.Models;
+﻿using MaisGuinchos.Dtos;
+using MaisGuinchos.Models;
 
 namespace MaisGuinchos.Services.Interfaces
 {
@@ -9,5 +10,7 @@ namespace MaisGuinchos.Services.Interfaces
         public Task<User> GetUserById(int id); 
 
         public Task<User> AddUser(User user);
+
+        public Task<User> UpdateUser(UpdUserDto userUpd, int id);
     }
 }
