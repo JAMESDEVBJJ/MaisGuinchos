@@ -13,5 +13,7 @@ namespace MaisGuinchos
         public DbSet<User> Users { get; set; }
 
         public DbSet<Guincho> Guinchos { get; set; }
+
+        public DbSet<Location> Locations { get; set; }
     }
 }

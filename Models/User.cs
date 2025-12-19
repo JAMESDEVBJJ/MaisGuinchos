@@ -36,6 +36,8 @@ namespace MaisGuinchos.Models
         [MinLength(8)]
         public string Password { get; set; }
 
+        public ICollection<Location>? Locations { get; set; }
+
         [Required]
         public UserType Tipo { get; set; }
 

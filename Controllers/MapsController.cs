@@ -1,4 +1,5 @@
-﻿using MaisGuinchos.Services;
+﻿using MaisGuinchos.Dtos;
+using MaisGuinchos.Services;
 using MaisGuinchos.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,7 +17,12 @@ namespace MaisGuinchos.Controllers
         [HttpGet("cords")]
         public async Task<IActionResult> GetCordsFromAddress([FromQuery(Name = "q")] string address)
         {
-            var cords = await _mapsService.GetCordsFromAdress(address);
+            var addressDto = new AddressDTO
+            {
+                address = address
+            };
+
+            var cords = await _mapsService.GetCordsFromAddress(addressDto);
 
             return Ok(cords);
         }

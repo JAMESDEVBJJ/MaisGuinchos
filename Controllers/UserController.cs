@@ -67,5 +67,13 @@ namespace MaisGuinchos.Controllers
 
             return Ok(updatedUser);
         }
+
+        [HttpPost("location/{id}")]
+        public async Task<IActionResult> UpdateLocation([FromBody] AddressDTO address, [FromRoute] int id)
+        {
+            var updatedLocation = await _userService.UpdateLocation(id, address);
+
+            return Ok(updatedLocation);
+        }
     }
 }
