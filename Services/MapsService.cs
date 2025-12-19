@@ -16,9 +16,9 @@ namespace MaisGuinchos.Services
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "MaisGuinchosApp/1.0 (contato: jamescblbjj@gmail.com)");
         }
 
-        public async Task<List<NominatimReturnDTO>?> GetCordsFromAdress(string address)
+        public async Task<List<NominatimReturnDTO>?> GetCordsFromAddress(AddressDTO address)
         {
-            string cordsUrl = $"https://nominatim.openstreetmap.org/search?format=json&q={address}";
+            string cordsUrl = $"https://nominatim.openstreetmap.org/search?format=json&q={address.address}";
 
             var response = await _httpClient.GetAsync(cordsUrl);
 
