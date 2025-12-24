@@ -1,4 +1,5 @@
 ﻿using MaisGuinchos.Dtos;
+using MaisGuinchos.Exceptions;
 using MaisGuinchos.Models;
 using MaisGuinchos.Repositorys;
 using MaisGuinchos.Repositorys.Interfaces;
@@ -14,14 +15,16 @@ namespace MaisGuinchos.Services
         private readonly IUserRepo _userRepo;
         private readonly IMapsService _mapsService;
         private readonly ILocationRepo _locationRepo;
+        private readonly IJwtService _jwtService;
 
         private readonly PasswordHasher _hasherUtil = new PasswordHasher();
 
-        public UserService(IUserRepo userRepo, IMapsService mapsService, ILocationRepo locationRepo)
+        public UserService(IUserRepo userRepo, IMapsService mapsService, ILocationRepo locationRepo, IJwtService jwtService)
         {
             _userRepo = userRepo;
             _mapsService = mapsService;
             _locationRepo = locationRepo;
+            _jwtService = jwtService;
         }
 
         public List<User> GetAllUsers()
@@ -37,7 +40,7 @@ namespace MaisGuinchos.Services
 
             if (user == null)
             {
-                throw new Exception("User not found.");
+                throw new NotFoundException("User");
             }
 
             return user;
@@ -60,13 +63,37 @@ namespace MaisGuinchos.Services
             return userAdd;
         }
 
+        public async Task<LoginResponseDTO> LoginUser(UserLoginDTO userDto)
+        {
+            var user = await _userRepo.GetUserByEmail(userDto.Email);
+
+            if (user == null)
+            {
+                throw new UnauthorizedException("Email not registered.");
+            }
+
+            var passwordValid = _hasherUtil.Verify(userDto.Password, user.Password);
+
+            if (!passwordValid)
+            {
+                throw new UnauthorizedAccessException("Invalid credentials.");
+            }
+
+            var token = _jwtService.GenerateToken(user);
+
+            return new LoginResponseDTO
+            {
+                Token = token
+            };
+        }
+
         public async Task<User> UpdateUser(UpdUserDto userUpd, int id)
         {
             var user = await _userRepo.GetUserById(id);
 
             if (user == null)
             {
-                throw new Exception("User not found.");
+                throw new NotFoundException("User");
             }
 
             user.Name = userUpd.Name ?? user.Name;
@@ -111,10 +138,15 @@ namespace MaisGuinchos.Services
 
             if (user == null)
             {
-                throw new Exception("User not found.");
+                throw new NotFoundException("User");
             }
 
             var geoLocation = await _mapsService.GetCordsFromAddress(address);
+
+            if (geoLocation == null || geoLocation.Count == 0)
+            {
+                throw new BadRequestException("Address not exists");
+            }
 
             var userLocation = new CreateLocationDTO
             {

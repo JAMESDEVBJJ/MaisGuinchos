@@ -11,6 +11,8 @@ namespace MaisGuinchos.Services.Interfaces
 
         public Task<User> AddUser(User user);
 
+        public Task<LoginResponseDTO> LoginUser(UserLoginDTO user);
+
         public Task<User> UpdateUser(UpdUserDto userUpd, int id);
 
         public Task<UpdLocationResponseDTO> UpdateLocation(int id, AddressDTO address);

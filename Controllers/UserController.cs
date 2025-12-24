@@ -5,6 +5,7 @@ using MaisGuinchos.Services;
 using MaisGuinchos.Services.Interfaces;
 using MaisGuinchos.Dtos;
 using Microsoft.AspNetCore.Routing.Constraints;
+using Npgsql.Replication.PgOutput.Messages;
 
 namespace MaisGuinchos.Controllers
 {
@@ -59,6 +60,19 @@ namespace MaisGuinchos.Controllers
                 return StatusCode(500, $"Erro interno do servidor: {ex.Message}");
             }
         }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> LoginUser([FromBody] UserLoginDTO userLogin)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var token = await _userService.LoginUser(userLogin);
+
+            return Ok(token);
+        } 
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser([FromBody] UpdUserDto userUpd, [FromRoute] int id)
