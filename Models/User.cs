@@ -6,7 +6,7 @@ namespace MaisGuinchos.Models
     public class User : BaseEntity
     {
         [Key]
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         [Required]
         [MaxLength(100)]
@@ -47,5 +47,7 @@ namespace MaisGuinchos.Models
             Motorista = 1,
             Empresa = 2
         }
+
+        public Guincho? Guincho { get; set; }
     }
 }

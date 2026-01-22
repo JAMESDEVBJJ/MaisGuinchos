@@ -13,7 +13,7 @@
 
     public class UserSummaryDTO
     {
-        public int? Id { get; set; }
+        public Guid? Id { get; set; }
 
         public string? UserName { get; set; }
     }

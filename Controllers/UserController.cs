@@ -6,6 +6,7 @@ using MaisGuinchos.Services.Interfaces;
 using MaisGuinchos.Dtos;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Npgsql.Replication.PgOutput.Messages;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MaisGuinchos.Controllers
 {
@@ -34,7 +35,7 @@ namespace MaisGuinchos.Controllers
 
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetUserById(int id)
+        public async Task<IActionResult> GetUserById(Guid id)
         {
             var user = await _userService.GetUserById(id);
             if (user == null) return NotFound();
@@ -44,21 +45,15 @@ namespace MaisGuinchos.Controllers
         [HttpPost]
         public async Task<IActionResult> AddUser(User user)
         {
-            try
-            {
-                var userAdd = await _userService.AddUser(user);
+            var userAdd = await _userService.AddUser(user);
 
-                if (userAdd == null)
-                {
-                    return BadRequest("Não foi possivel adicionar o usuário");
-                }
-
-                return CreatedAtAction(nameof(GetUserById), new {id = userAdd.Id}, userAdd);
-            }
-            catch (Exception ex)
+            if (userAdd == null)
             {
-                return StatusCode(500, $"Erro interno do servidor: {ex.Message}");
+                return BadRequest("Não foi possivel adicionar o usuário");
             }
+
+            return CreatedAtAction(nameof(GetUserById), new {id = userAdd.Id}, userAdd);
+            
         }
 
         [HttpPost("login")]
@@ -75,7 +70,7 @@ namespace MaisGuinchos.Controllers
         } 
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser([FromBody] UpdUserDto userUpd, [FromRoute] int id)
+        public async Task<IActionResult> UpdateUser([FromBody] UpdUserDto userUpd, [FromRoute] Guid id)
         {
             var updatedUser = await _userService.UpdateUser(userUpd, id);
 
@@ -83,7 +78,8 @@ namespace MaisGuinchos.Controllers
         }
 
         [HttpPost("location/{id}")]
-        public async Task<IActionResult> UpdateLocation([FromBody] AddressDTO address, [FromRoute] int id)
+        [Authorize(Roles = "Cliente")]
+        public async Task<IActionResult> UpdateLocation([FromBody] AddressDTO address, [FromRoute] Guid id)
         {
             var updatedLocation = await _userService.UpdateLocation(id, address);
 

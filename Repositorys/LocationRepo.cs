@@ -13,7 +13,7 @@ namespace MaisGuinchos.Repositorys
             _dbContext = dbContext;
         }
 
-        public async Task<Location> UpdateLocation(int userId, CreateLocationDTO location)
+        public async Task<Location> UpdateLocation(Guid userId, CreateLocationDTO location)
         {
             var locationAdd = new Location
             {

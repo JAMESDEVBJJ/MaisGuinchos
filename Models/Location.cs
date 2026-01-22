@@ -5,6 +5,7 @@ namespace MaisGuinchos.Models
 {
     public class Location : BaseEntity
     {
+        public Guid Id { get; set; }    
         public double Latitude { get; set; }
         public double Longitude { get; set; }
 
@@ -12,7 +13,7 @@ namespace MaisGuinchos.Models
 
         [Required]
         [ForeignKey("User")]
-        public int UserId { get; set; }
+        public Guid UserId { get; set; }
         public User User { get; set; }
     }
 }

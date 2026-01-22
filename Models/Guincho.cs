@@ -7,19 +7,10 @@ namespace MaisGuinchos.Models
     public class Guincho : BaseEntity
     {
         [Key]
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
-        [Required]
-        [MaxLength(100)]
-        public string NomeMotorista { get; set; }
-
-        [Required]
-        [RegularExpression(@"^\d{3}\.\d{3}\.\d{3}-\d{2}$", ErrorMessage = "CPF tem que ser no formato XXX.XXX.XXX-XX")]
-        public string CpfMotorista { get; set; }
-
-        [Required]
-        [Phone]
-        public string NumeroMotorista { get; set; }
+        public Guid UserId { get; set; }
+        public User User { get; set; }
 
         [MaxLength(100)]
         public string? NomeEmpresa { get; set; }
@@ -36,23 +27,9 @@ namespace MaisGuinchos.Models
         [Required]
         public string Cor { get; set; }
 
-        [Required]
-        [Phone]
-        public string TelefoneContato { get; set; }
-
-        [DefaultValue(5)]
-        [Range(0, 5)]
-        public double Estrelas { get; set; }
-
-        [Required]
-        [MinLength(8)]
-        public string Password { get; set; }
-
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; }
-
         [Url]
         public string? Foto { get; set; }
+
+        public bool Disponivel { get; set; }
     }
 }
