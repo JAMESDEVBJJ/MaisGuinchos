@@ -7,14 +7,14 @@ namespace MaisGuinchos.Services.Interfaces
     {
         public List<User> GetAllUsers();
 
-        public Task<User> GetUserById(int id); 
+        public Task<User> GetUserById(Guid id); 
 
         public Task<User> AddUser(User user);
 
         public Task<LoginResponseDTO> LoginUser(UserLoginDTO user);
 
-        public Task<User> UpdateUser(UpdUserDto userUpd, int id);
+        public Task<User> UpdateUser(UpdUserDto userUpd, Guid id);
 
-        public Task<UpdLocationResponseDTO> UpdateLocation(int id, AddressDTO address);
+        public Task<UpdLocationResponseDTO> UpdateLocation(Guid id, AddressDTO address);
     }
 }

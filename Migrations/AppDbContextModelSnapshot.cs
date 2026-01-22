@@ -24,11 +24,9 @@ namespace MaisGuinchos.Migrations
 
             modelBuilder.Entity("MaisGuinchos.Models.Guincho", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<string>("CnpjEmpresa")
                         .HasColumnType("text");
@@ -37,19 +35,11 @@ namespace MaisGuinchos.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("CpfMotorista")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<double>("Estrelas")
-                        .HasColumnType("double precision");
+                    b.Property<bool>("Disponivel")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Foto")
                         .HasColumnType("text");
@@ -62,42 +52,29 @@ namespace MaisGuinchos.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<string>("NomeMotorista")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("NumeroMotorista")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("Placa")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("TelefoneContato")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("Guinchos");
                 });
 
             modelBuilder.Entity("MaisGuinchos.Models.Location", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -115,8 +92,8 @@ namespace MaisGuinchos.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -127,11 +104,9 @@ namespace MaisGuinchos.Migrations
 
             modelBuilder.Entity("MaisGuinchos.Models.User", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Cpf")
                         .IsRequired()
@@ -176,6 +151,17 @@ namespace MaisGuinchos.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("MaisGuinchos.Models.Guincho", b =>
+                {
+                    b.HasOne("MaisGuinchos.Models.User", "User")
+                        .WithOne("Guincho")
+                        .HasForeignKey("MaisGuinchos.Models.Guincho", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("MaisGuinchos.Models.Location", b =>
                 {
                     b.HasOne("MaisGuinchos.Models.User", "User")
@@ -189,6 +175,8 @@ namespace MaisGuinchos.Migrations
 
             modelBuilder.Entity("MaisGuinchos.Models.User", b =>
                 {
+                    b.Navigation("Guincho");
+
                     b.Navigation("Locations");
                 });
 #pragma warning restore 612, 618

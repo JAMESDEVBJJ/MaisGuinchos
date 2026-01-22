@@ -21,7 +21,7 @@ namespace MaisGuinchos.Repositorys
             return users;
         }
 
-        public async Task<User> GetUserById(int id)
+        public async Task<User> GetUserById(Guid id)
         {
             var user = _dbContext.Users.FirstOrDefault(u => u.Id == id);
 

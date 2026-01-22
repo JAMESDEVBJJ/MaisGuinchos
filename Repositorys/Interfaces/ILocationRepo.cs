@@ -5,6 +5,6 @@ namespace MaisGuinchos.Repositorys.Interfaces
 {
     public interface ILocationRepo
     {
-        public Task<Location> UpdateLocation(int id, CreateLocationDTO location);
+        public Task<Location> UpdateLocation(Guid id, CreateLocationDTO location);
     }
 }

@@ -34,7 +34,7 @@ namespace MaisGuinchos.Services
             return users;
         }
 
-        public async Task<User> GetUserById(int id)
+        public async Task<User> GetUserById(Guid id)
         {
             var user = await _userRepo.GetUserById(id);
 
@@ -87,7 +87,7 @@ namespace MaisGuinchos.Services
             };
         }
 
-        public async Task<User> UpdateUser(UpdUserDto userUpd, int id)
+        public async Task<User> UpdateUser(UpdUserDto userUpd, Guid id)
         {
             var user = await _userRepo.GetUserById(id);
 
@@ -132,7 +132,7 @@ namespace MaisGuinchos.Services
             return await _userRepo.GetUserById(id);
         }
 
-        public async Task<UpdLocationResponseDTO> UpdateLocation(int id, AddressDTO address)
+        public async Task<UpdLocationResponseDTO> UpdateLocation(Guid id, AddressDTO address)
         {
             var user = await _userRepo.GetUserById(id);
 

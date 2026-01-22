@@ -10,7 +10,7 @@ namespace MaisGuinchos.Repositorys.Interfaces
 
         public Task<User> GetUserByCpf(string cpf);
 
-        public Task<User> GetUserById(int id);
+        public Task<User> GetUserById(Guid id);
 
         public Task<User> AddUser(User user);
         public Task Save();
