@@ -2,16 +2,20 @@
   
 using MaisGuinchos.Models;
 using Microsoft.EntityFrameworkCore;
+using MaisGuinchos.Dtos;
+using MaisGuinchos.utils;
 
 namespace MaisGuinchos.Repositorys
 {
     public class UserRepo : IUserRepo
     {
         private readonly AppDbContext _dbContext;
+        private readonly ILocationRepo _locationRepo;
 
-        public UserRepo(AppDbContext dbContext)
+        public UserRepo(AppDbContext dbContext, ILocationRepo locationRepo)
         {
             _dbContext = dbContext;
+            _locationRepo = locationRepo;
         }
 
         public List<User> GetAllUsers()
@@ -21,7 +25,7 @@ namespace MaisGuinchos.Repositorys
             return users;
         }
 
-        public async Task<User> GetUserById(int id)
+        public async Task<User> GetUserById(Guid id)
         {
             var user = _dbContext.Users.FirstOrDefault(u => u.Id == id);
 
@@ -40,6 +44,43 @@ namespace MaisGuinchos.Repositorys
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Cpf == cpf);
 
             return user;
+        }
+
+        public async Task<List<MotoristaProxDTO>> GetMotoristasProximos(Location userLocation)
+        {
+            var users = await GetAllMotoristasComLoc();
+
+            return users.Select(u => new MotoristaProxDTO
+            {
+               Motorista = new MotoristaComLoc
+               {
+                   UserId = u.UserId,
+                   Name = u.Name,
+                   Lat = u.Lat,
+                   Lon = u.Lon
+               },
+               DistanceKm = GeoHelper.CalcularDistanciaKm(
+                   userLocation.Latitude, userLocation.Longitude, 
+                   u.Lat, u.Lon),
+            }).OrderBy(m => m.DistanceKm).Take(10).ToList();
+        }
+
+        public async Task<List<MotoristaComLoc>> GetAllMotoristasComLoc()
+        {
+            return await _dbContext.Users.Where(u => u.Tipo == User.UserType.Motorista)
+                .Select(u => new MotoristaComLoc
+                    {
+                        UserId = u.Id,
+                        Name = u.Name,
+                        Lat = u.Locations
+                        .OrderByDescending(l => l.CreatedAt)
+                        .Select(l => l.Latitude)
+                        .FirstOrDefault(),
+                        Lon = u.Locations
+                        .OrderByDescending(l => l.CreatedAt)
+                        .Select(l => l.Longitude)
+                        .FirstOrDefault(),
+                    }).ToListAsync();
         }
 
         public async Task<User> AddUser(User user)

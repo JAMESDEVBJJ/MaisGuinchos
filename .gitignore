@@ -10,9 +10,13 @@ Migrations/
 # VS Code
 .vscode/
 
+.vs/
+
 # Visual Studio
 *.suo
 *.pdb
 
 # Sistema
 Thumbs.db
+
+appsettings.json
