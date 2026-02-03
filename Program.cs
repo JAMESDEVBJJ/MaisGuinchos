@@ -16,10 +16,24 @@ builder.Services.AddOpenApi();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepo, UserRepo>();
 builder.Services.AddScoped<ILocationRepo, LocationRepo>();
+builder.Services.AddScoped<IGuinchoService, GuinchoService>();
+builder.Services.AddScoped<IGuinchoRepo, GuinchoRepo>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddHttpClient<IMapsService, MapsService>();
 builder.Services.AddControllers();          
 builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy
+                .WithOrigins("http://localhost:5173")
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 
@@ -51,6 +65,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseHttpsRedirection();
+
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -13,6 +13,7 @@ namespace MaisGuinchos.Repositorys
             _dbContext = dbContext;
         }
 
+
         public async Task<Location> UpdateLocation(Guid userId, CreateLocationDTO location)
         {
             var locationAdd = new Location
@@ -28,6 +29,19 @@ namespace MaisGuinchos.Repositorys
             await _dbContext.SaveChangesAsync();
 
             return locationAdd;
+        }
+
+        public async Task<Location?> GetLastFromUser(Guid userId)
+        {
+            var location = _dbContext.Locations.Where(l => l.UserId == userId)
+                .OrderByDescending(l => l.Id)
+                .FirstOrDefault();
+
+           /* if (location == null) {
+                throw new Exception("Usuário não tem ultima localização cadastrada.");
+            }*/
+
+            return location;
         }
     }
 }

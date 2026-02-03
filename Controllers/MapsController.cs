@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MaisGuinchos.Controllers
 {
+    [Route("api/[controller]")]
     public class MapsController : ControllerBase
     {
         private readonly IMapsService _mapsService;

@@ -4,14 +4,17 @@ using MaisGuinchos.Models;
 using MaisGuinchos.Services;
 using MaisGuinchos.Services.Interfaces;
 using MaisGuinchos.Dtos;
+using MaisGuinchos.Dtos.User;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Npgsql.Replication.PgOutput.Messages;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+
 
 namespace MaisGuinchos.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -20,7 +23,7 @@ namespace MaisGuinchos.Controllers
             _userService = userService;
         }
 
-        [HttpGet]
+        [HttpGet("all")]
         public IActionResult GetUsers()
         {
             List<User> users = _userService.GetAllUsers();
@@ -33,9 +36,30 @@ namespace MaisGuinchos.Controllers
             return Ok(users);
         }
 
+        [HttpGet("proximos")]
+        [Authorize]
+        public async Task<IActionResult> GetAllMotoritasProx(int? limit = null)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetUserById(Guid id)
+            if (userId == null)
+            {
+                return Unauthorized("Id do usuário não encontrado.");
+            }
+
+            var motoristas = await _userService.BuscarMotoristasProximos(userId, limit);
+
+            if (!motoristas.Any())
+            {
+                return BadRequest(new { message = "Usuário sem localização válida." });
+            }
+
+            return Ok(motoristas);
+        }
+
+
+        [HttpGet("")]
+        public async Task<IActionResult> GetUserById([FromBody] Guid id)
         {
             var user = await _userService.GetUserById(id);
             if (user == null) return NotFound();
@@ -43,7 +67,7 @@ namespace MaisGuinchos.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddUser(User user)
+        public async Task<IActionResult> AddUser(CreateUserDTO user)
         {
             var userAdd = await _userService.AddUser(user);
 
@@ -52,7 +76,7 @@ namespace MaisGuinchos.Controllers
                 return BadRequest("Não foi possivel adicionar o usuário");
             }
 
-            return CreatedAtAction(nameof(GetUserById), new {id = userAdd.Id}, userAdd);
+            return CreatedAtAction(nameof(GetUserById), userAdd);
             
         }
 
@@ -77,11 +101,20 @@ namespace MaisGuinchos.Controllers
             return Ok(updatedUser);
         }
 
-        [HttpPost("location/{id}")]
-        [Authorize(Roles = "Cliente")]
-        public async Task<IActionResult> UpdateLocation([FromBody] AddressDTO address, [FromRoute] Guid id)
+        [HttpPost("location")]
+        [Authorize(Roles = "Cliente,Motorista")]
+        public async Task<IActionResult> UpdateLocation([FromBody] AddressDTO address)
         {
-            var updatedLocation = await _userService.UpdateLocation(id, address);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userId == null)
+            {
+                return Unauthorized("Usuário do user logado não encontrado.");
+            }
+
+            var userGuid = Guid.Parse(userId);
+
+            var updatedLocation = await _userService.UpdateLocation(userGuid, address);
 
             return Ok(updatedLocation);
         }
