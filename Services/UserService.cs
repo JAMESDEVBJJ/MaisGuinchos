@@ -257,7 +257,7 @@ namespace MaisGuinchos.Services
 
             var guinchosProximos = await _userRepo.GetMotoristasProximos(userLocation);
 
-            return guinchosProximos;
+            return guinchosProximos!;
         }
     }
 }
