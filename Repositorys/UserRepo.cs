@@ -59,6 +59,10 @@ namespace MaisGuinchos.Repositorys
                    Lat = u.Lat,
                    Lon = u.Lon
                },
+               Stars = u.Stars,
+               Model = u.Model,
+               Color = u.Color,
+               Available = u.Available,
                DistanceKm = GeoHelper.CalcularDistanciaKm(
                    userLocation.Latitude, userLocation.Longitude, 
                    u.Lat, u.Lon),
@@ -67,20 +71,29 @@ namespace MaisGuinchos.Repositorys
 
         public async Task<List<MotoristaComLoc>> GetAllMotoristasComLoc()
         {
-            return await _dbContext.Users.Where(u => u.Tipo == User.UserType.Motorista)
+            return await _dbContext.Users
+                .Where(u =>
+                    u.Tipo == User.UserType.Motorista &&
+                    u.Locations.Any()
+                )
                 .Select(u => new MotoristaComLoc
-                    {
-                        UserId = u.Id,
-                        Name = u.Name,
-                        Lat = u.Locations
+                {
+                    UserId = u.Id,
+                    Name = u.Name,
+                    Lat = u.Locations
                         .OrderByDescending(l => l.CreatedAt)
                         .Select(l => l.Latitude)
                         .FirstOrDefault(),
-                        Lon = u.Locations
+                    Lon = u.Locations
                         .OrderByDescending(l => l.CreatedAt)
                         .Select(l => l.Longitude)
                         .FirstOrDefault(),
-                    }).ToListAsync();
+                    Available = u.Guincho!.Disponivel,
+                    Stars = u.Estrelas,
+                    Color = u.Guincho!.Cor,
+                    Model = u.Guincho!.Modelo
+                })
+                .ToListAsync();
         }
 
         public async Task<User> AddUser(User user)
