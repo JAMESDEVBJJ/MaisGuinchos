@@ -1,6 +1,6 @@
 ﻿namespace MaisGuinchos.Infrastructure.http.OSRM
 {
-    public class OsrmReponse
+    public class OsrmResponse
     {
         public List<OsrmRoute>? routes { get; set; }
     }

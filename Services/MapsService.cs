@@ -1,8 +1,9 @@
 ﻿using MaisGuinchos.Dtos;
+using MaisGuinchos.Dtos.Route;
 using MaisGuinchos.Infrastructure.http.OSRM;
 using MaisGuinchos.Services.Interfaces;
+using System.Globalization;
 using System.Text.Json;
-using static System.Net.WebRequestMethods;
 
 namespace MaisGuinchos.Services
 {
@@ -35,7 +36,7 @@ namespace MaisGuinchos.Services
 
             var content = await response.Content.ReadAsStringAsync();
 
-            var osrmReturn = JsonSerializer.Deserialize<OsrmReponse>(content);
+            var osrmReturn = JsonSerializer.Deserialize<OsrmResponse>(content);
 
             var osrmData = new RouteDTO
             {
@@ -44,6 +45,61 @@ namespace MaisGuinchos.Services
             };
 
             return osrmData;
+        }
+
+        public async Task<CalculateRouteReturnDTO?> GetRoute(
+                     double originLat,
+                     double originLon,
+                     double destLat,
+                     double destLon)
+        {
+            string routeUrl =
+    $"http://router.project-osrm.org/route/v1/driving/" +
+    $"{originLon.ToString(CultureInfo.InvariantCulture)}," +
+    $"{originLat.ToString(CultureInfo.InvariantCulture)};" +
+    $"{destLon.ToString(CultureInfo.InvariantCulture)}," +
+    $"{destLat.ToString(CultureInfo.InvariantCulture)}" +
+    $"?overview=full&geometries=geojson";
+
+            var response = await _httpClient.GetAsync(routeUrl);
+
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            var osrmReturn = JsonSerializer.Deserialize<OsrmResponse>(content);
+
+            if (osrmReturn?.routes == null || osrmReturn.routes.Count == 0)
+                return null;
+
+            var route = osrmReturn.routes[0];
+
+            var distanceKm = route.distance / 1000;
+            var durationMin = route.duration / 60;
+
+            var polyline = route.geometry.coordinates
+                .Select(coord => new CoordinateDto
+                {
+                    Lon = coord[0],
+                    Lat = coord[1]
+                })
+                .ToList();
+
+            var duration = (int)Math.Round(durationMin, 0);
+
+            decimal baseFee = 80;
+            decimal pricePerKm = 5;
+
+            decimal price = baseFee + ((decimal)distanceKm * pricePerKm) + (duration / 4);
+
+            return new CalculateRouteReturnDTO
+            {
+                DistanceKm = Math.Round(distanceKm, 2),
+                DurationMinutes = duration,
+                PriceEstimate = Math.Round(price, 2),
+                Polyline = polyline
+            };
         }
     }
 }

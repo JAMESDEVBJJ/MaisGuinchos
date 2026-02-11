@@ -1,4 +1,5 @@
 ﻿using MaisGuinchos.Dtos;
+using MaisGuinchos.Dtos.Route;
 
 namespace MaisGuinchos.Services.Interfaces
 {
@@ -6,5 +7,11 @@ namespace MaisGuinchos.Services.Interfaces
     {
         public Task<List<NominatimReturnDTO>?> GetCordsFromAddress(AddressDTO address);
         public Task<RouteDTO>? GetRouteDistance(string user, string guincho);
+
+        public Task<CalculateRouteReturnDTO?> GetRoute(
+            double originLat,
+            double originLon,
+            double destLat,
+            double destLon);
     }
 }
