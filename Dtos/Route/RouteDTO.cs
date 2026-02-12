@@ -1,4 +1,4 @@
-﻿namespace MaisGuinchos.Dtos
+﻿namespace MaisGuinchos.Dtos.Route
 {
     public class RouteDTO
     {
