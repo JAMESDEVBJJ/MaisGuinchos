@@ -95,8 +95,9 @@ namespace MaisGuinchos.Services
                 pricePerKm = 7.0m;
             else if (distanceKm <= 100)         
                 pricePerKm = 6.5m;         
-            else if (distanceKm <= 400) pricePerKm = 5.5m; 
-            else pricePerKm = 4.8m;
+            else if (distanceKm <= 400) pricePerKm = 5.5m;
+            else if (distanceKm <= 900) pricePerKm = 4.5m;
+            else pricePerKm = 4.0m;
 
             decimal price = baseFee + ((decimal)distanceKm * pricePerKm) + (duration / 4);
 
