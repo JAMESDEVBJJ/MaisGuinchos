@@ -54,12 +54,12 @@ namespace MaisGuinchos.Services
                      double destLon)
         {
             string routeUrl =
-    $"http://router.project-osrm.org/route/v1/driving/" +
-    $"{originLon.ToString(CultureInfo.InvariantCulture)}," +
-    $"{originLat.ToString(CultureInfo.InvariantCulture)};" +
-    $"{destLon.ToString(CultureInfo.InvariantCulture)}," +
-    $"{destLat.ToString(CultureInfo.InvariantCulture)}" +
-    $"?overview=full&geometries=geojson";
+                $"http://router.project-osrm.org/route/v1/driving/" +
+                $"{originLon.ToString(CultureInfo.InvariantCulture)}," +
+                $"{originLat.ToString(CultureInfo.InvariantCulture)};" +
+                $"{destLon.ToString(CultureInfo.InvariantCulture)}," +
+                $"{destLat.ToString(CultureInfo.InvariantCulture)}" +
+                $"?overview=full&geometries=geojson";
 
             var response = await _httpClient.GetAsync(routeUrl);
 
@@ -90,6 +90,13 @@ namespace MaisGuinchos.Services
 
             decimal baseFee = 80;
             decimal pricePerKm = 5;
+
+            if (distanceKm <= 50)
+                pricePerKm = 7.0m;
+            else if (distanceKm <= 100)         
+                pricePerKm = 6.5m;         
+            else if (distanceKm <= 400) pricePerKm = 5.5m; 
+            else pricePerKm = 4.8m;
 
             decimal price = baseFee + ((decimal)distanceKm * pricePerKm) + (duration / 4);
 
