@@ -57,7 +57,10 @@ namespace MaisGuinchos.Repositorys
                    UserId = u.UserId,
                    Name = u.Name,
                    Lat = u.Lat,
-                   Lon = u.Lon
+                   Lon = u.Lon,
+                   Foto = u.Foto,
+                   Placa = u.Placa,
+                   Number = u.Number
                },
                Stars = u.Stars,
                Model = u.Model,
@@ -65,7 +68,7 @@ namespace MaisGuinchos.Repositorys
                Available = u.Available,
                DistanceKm = GeoHelper.CalcularDistanciaKm(
                    userLocation.Latitude, userLocation.Longitude, 
-                   u.Lat, u.Lon),
+                   u.Lat, u.Lon)              
             }).OrderBy(m => m.DistanceKm).Take(10).ToList();
         }
 
@@ -91,7 +94,10 @@ namespace MaisGuinchos.Repositorys
                     Available = u.Guincho!.Disponivel,
                     Stars = u.Estrelas,
                     Color = u.Guincho!.Cor,
-                    Model = u.Guincho!.Modelo
+                    Model = u.Guincho!.Modelo,
+                    Foto = u.Guincho!.Foto,
+                    Placa = u.Guincho.Placa,
+                    Number = u.NumeroTelefone
                 })
                 .ToListAsync();
         }

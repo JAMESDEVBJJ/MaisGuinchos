@@ -6,6 +6,7 @@ using MaisGuinchos.Repositorys;
 using MaisGuinchos.Repositorys.Interfaces;
 using MaisGuinchos.Services.Interfaces;
 using MaisGuinchos.utils;
+using Microsoft.AspNetCore.Http.HttpResults;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Globalization;
@@ -80,18 +81,26 @@ namespace MaisGuinchos.Services
             {
                 if (user.Guincho != null)
                 {
+                    if (user.Guincho.Foto == null)
+                        throw new ValidationException("Foto do guincho é obrigatória.");
+
+                    var photoUrl = await SavePhotoAsync(user.Guincho.Foto);
+
                     userAdd.Guincho = new Guincho
                     {
                         Modelo = user.Guincho.Modelo,
                         Cor = user.Guincho.Cor,
                         Disponivel = true,
-                        Placa = user.Guincho.Placa
+                        Placa = user.Guincho.Placa,
+                        Foto = photoUrl
                     };
+
                 } else
                 {
                     throw new Exception("Guincho obrigatório para motorista.");
                 } 
             }
+
 
             var userAdded = await _userRepo.AddUser(userAdd);
 
@@ -100,7 +109,7 @@ namespace MaisGuinchos.Services
                 var userDTO = new UserAddedDTO
                 {
                     UserName = userAdded.UserName,
-                    Name = userAdded.UserName,
+                    Name = userAdded.Name,
                     Email = userAdded.Email,
                     NumeroTelefone = userAdded.NumeroTelefone,
                     Tipo = (UserAddedDTO.UserType)userAdded.Tipo
@@ -120,6 +129,29 @@ namespace MaisGuinchos.Services
             }
 
             return null;
+        }
+
+        private async Task<string> SavePhotoAsync(IFormFile file)
+        {
+            var uploadsFolder = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "wwwroot",
+                "uploads"
+            );
+
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder);
+
+            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            return $"/uploads/{fileName}";
         }
 
         public async Task<LoginResponseDTO> LoginUser(UserLoginDTO userDto)
