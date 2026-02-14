@@ -1,4 +1,6 @@
-﻿namespace MaisGuinchos.Dtos
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace MaisGuinchos.Dtos
 {
     public class MotoristaProxDTO
     {
@@ -11,6 +13,7 @@
         public string Model {  get; set; }
 
         public double DistanceKm { get; set; }
+
     }   
 
     public class MotoristaComLoc
@@ -31,5 +34,10 @@
         public string Model { get; set; }
 
         public bool Available { get; set; }
+        public string Placa { get; set; }
+        public string? Foto { get; set; }
+
+        [Phone]
+        public string Number { get; set; }
     }
 }

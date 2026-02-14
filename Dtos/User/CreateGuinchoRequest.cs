@@ -25,5 +25,7 @@
             ErrorMessage = "A CNH deve conter exatamente 11 números."
         )]
         public string? Cnh { get; set; } = null!;
+
+        public IFormFile? Foto { get; set; }
     }
 }
