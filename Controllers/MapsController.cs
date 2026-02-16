@@ -83,5 +83,31 @@ namespace MaisGuinchos.Controllers
 
             return Ok(route);
         }
+
+        [HttpPost("route/calculate/driver")]
+        public async Task<IActionResult> CalculateRouteDriver([FromBody] CalculateRouteDTO routeDto)
+        {
+            if (routeDto.DriverLat == null || routeDto.DriverLon == null)
+                return BadRequest("Cordenadas do motorista inválidas.");
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var route = await _mapsService.GetRoute(
+                routeDto.OriginLat,
+                routeDto.OriginLon,
+                routeDto.DriverLat,
+                routeDto.DriverLon
+            );
+
+            if (route == null)
+                return BadRequest("Erro ao calcular rota.");
+
+            route.PriceEstimate = route.PriceEstimate / 2;
+
+            return Ok(route);
+        }
     }
 }

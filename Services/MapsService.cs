@@ -50,15 +50,15 @@ namespace MaisGuinchos.Services
         public async Task<CalculateRouteReturnDTO?> GetRoute(
                      double originLat,
                      double originLon,
-                     double destLat,
-                     double destLon)
+                     double? destLat,
+                     double? destLon)
         {
             string routeUrl =
                 $"http://router.project-osrm.org/route/v1/driving/" +
                 $"{originLon.ToString(CultureInfo.InvariantCulture)}," +
                 $"{originLat.ToString(CultureInfo.InvariantCulture)};" +
-                $"{destLon.ToString(CultureInfo.InvariantCulture)}," +
-                $"{destLat.ToString(CultureInfo.InvariantCulture)}" +
+                $"{destLon?.ToString(CultureInfo.InvariantCulture)}," +
+                $"{destLat?.ToString(CultureInfo.InvariantCulture)}" +
                 $"?overview=full&geometries=geojson";
 
             var response = await _httpClient.GetAsync(routeUrl);

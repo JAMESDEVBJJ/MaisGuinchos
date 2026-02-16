@@ -11,7 +11,7 @@ namespace MaisGuinchos.Services.Interfaces
         public Task<CalculateRouteReturnDTO?> GetRoute(
             double originLat,
             double originLon,
-            double destLat,
-            double destLon);
+            double? destLat,
+            double? destLon);
     }
 }
