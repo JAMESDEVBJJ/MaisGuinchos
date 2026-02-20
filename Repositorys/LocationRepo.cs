@@ -37,10 +37,6 @@ namespace MaisGuinchos.Repositorys
                 .OrderByDescending(l => l.Id)
                 .FirstOrDefault();
 
-           /* if (location == null) {
-                throw new Exception("Usuário não tem ultima localização cadastrada.");
-            }*/
-
             return location;
         }
     }

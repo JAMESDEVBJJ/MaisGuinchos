@@ -18,6 +18,8 @@ builder.Services.AddScoped<IUserRepo, UserRepo>();
 builder.Services.AddScoped<ILocationRepo, LocationRepo>();
 builder.Services.AddScoped<IGuinchoService, GuinchoService>();
 builder.Services.AddScoped<IGuinchoRepo, GuinchoRepo>();
+builder.Services.AddScoped<ITowRequestService, TowRequestService>();
+builder.Services.AddScoped<ITowRequestRepo, TowRequestRepo>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddHttpClient<IMapsService, MapsService>();
 builder.Services.AddControllers();          
