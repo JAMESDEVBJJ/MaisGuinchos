@@ -8,6 +8,7 @@ using System.Globalization;
 
 namespace MaisGuinchos.Controllers
 {
+    [ApiController]
     [Route("api/[controller]")]
     public class MapsController : ControllerBase
     {
