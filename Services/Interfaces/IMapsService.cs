@@ -1,5 +1,6 @@
 ﻿using MaisGuinchos.Dtos;
 using MaisGuinchos.Dtos.Route;
+using MaisGuinchos.Models;
 
 namespace MaisGuinchos.Services.Interfaces
 {
@@ -13,5 +14,8 @@ namespace MaisGuinchos.Services.Interfaces
             double originLon,
             double? destLat,
             double? destLon);
+
+        Task<Location?> GetLastLocationAsync(Guid userId);
+
     }
 }

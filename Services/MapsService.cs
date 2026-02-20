@@ -1,6 +1,8 @@
 ﻿using MaisGuinchos.Dtos;
 using MaisGuinchos.Dtos.Route;
 using MaisGuinchos.Infrastructure.http.OSRM;
+using MaisGuinchos.Models;
+using MaisGuinchos.Repositorys.Interfaces;
 using MaisGuinchos.Services.Interfaces;
 using System.Globalization;
 using System.Text.Json;
@@ -10,11 +12,13 @@ namespace MaisGuinchos.Services
     public class MapsService : IMapsService
     {
         private readonly HttpClient _httpClient;
+        private readonly ILocationRepo _locationRepository;
 
-        public MapsService(HttpClient httpClient)
+        public MapsService(HttpClient httpClient, ILocationRepo locationRepository)
         {
             _httpClient = httpClient;
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "MaisGuinchosApp/1.0 (contato: jamescblbjj@gmail.com)");
+            _locationRepository = locationRepository;
         }
 
         public async Task<List<NominatimReturnDTO>?> GetCordsFromAddress(AddressDTO address)
@@ -108,6 +112,16 @@ namespace MaisGuinchos.Services
                 PriceEstimate = Math.Round(price, 2),
                 Polyline = polyline
             };
+        }
+
+        public async Task<Location?> GetLastLocationAsync(Guid userId)
+        {
+            var location = await _locationRepository.GetLastFromUser(userId);
+
+            if (location == null)
+                return null;
+
+            return location;
         }
     }
 }

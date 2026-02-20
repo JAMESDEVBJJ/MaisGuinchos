@@ -102,6 +102,72 @@ namespace MaisGuinchos.Migrations
                     b.ToTable("Locations");
                 });
 
+            modelBuilder.Entity("MaisGuinchos.Models.TowRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ClientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("DriverId")
+                        .HasColumnType("uuid");
+
+                    b.Property<double>("DropoffLat")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("DropoffLon")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("FinalPrice")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<double>("PickupLat")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("PickupLon")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("SuggestedPrice")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<double>("TotalDistanceKm")
+                        .HasColumnType("double precision");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("VehicleIssue")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("VehicleType")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId");
+
+                    b.HasIndex("DriverId");
+
+                    b.ToTable("TowRequests");
+                });
+
             modelBuilder.Entity("MaisGuinchos.Models.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -171,6 +237,25 @@ namespace MaisGuinchos.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MaisGuinchos.Models.TowRequest", b =>
+                {
+                    b.HasOne("MaisGuinchos.Models.User", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MaisGuinchos.Models.User", "Driver")
+                        .WithMany()
+                        .HasForeignKey("DriverId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Client");
+
+                    b.Navigation("Driver");
                 });
 
             modelBuilder.Entity("MaisGuinchos.Models.User", b =>

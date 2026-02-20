@@ -2,6 +2,7 @@
 using MaisGuinchos.Dtos.Route;
 using MaisGuinchos.Services;
 using MaisGuinchos.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
 
@@ -44,7 +45,7 @@ namespace MaisGuinchos.Controllers
             if (string.IsNullOrEmpty(routeDto.Destination))
                 return BadRequest("Destino inválido");
 
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
@@ -108,6 +109,26 @@ namespace MaisGuinchos.Controllers
             route.PriceEstimate = route.PriceEstimate / 2;
 
             return Ok(route);
+        }
+
+        [Authorize(Roles = "Motorista,Cliente")]
+        [HttpGet("last-location")]
+        public async Task<IActionResult> GetLastLocation()
+        {
+            var sub = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+          ?? User.FindFirst("sub")?.Value;
+            if (string.IsNullOrEmpty(sub)) return Unauthorized();
+
+            var userId = Guid.Parse(sub);
+
+            var lastLocation = await _mapsService.GetLastLocationAsync(userId);
+
+            if (lastLocation == null)
+            {
+                return NotFound("Nenhuma localização encontrada para o usuário.");
+            }
+
+            return Ok(lastLocation);
         }
     }
 }

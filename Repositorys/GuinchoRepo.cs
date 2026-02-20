@@ -7,7 +7,8 @@ namespace MaisGuinchos.Repositorys
     {
         private readonly AppDbContext _dbContext;
 
-        public GuinchoRepo(AppDbContext dbContext) {
+        public GuinchoRepo(AppDbContext dbContext)
+        {
             _dbContext = dbContext;
         }
 
@@ -15,7 +16,7 @@ namespace MaisGuinchos.Repositorys
         {
             var guinchos = _dbContext.Guinchos.ToList();
 
-            return guinchos; 
+            return guinchos;
         }
     }
 }
