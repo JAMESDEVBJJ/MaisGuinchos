@@ -1,4 +1,5 @@
 ﻿using MaisGuinchos;
+using MaisGuinchos.Hubs;
 using MaisGuinchos.Middlewares;
 using MaisGuinchos.Repositorys;
 using MaisGuinchos.Repositorys.Interfaces;
@@ -24,6 +25,7 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddHttpClient<IMapsService, MapsService>();
 builder.Services.AddControllers();          
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSignalR();
 
 builder.Services.AddCors(options =>
 {
@@ -76,6 +78,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<TowHub>("/towhub");
 
 app.Run();
 

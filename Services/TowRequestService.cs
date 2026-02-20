@@ -1,17 +1,23 @@
 ﻿using MaisGuinchos.Dtos.Tow;
+using MaisGuinchos.Hubs;
 using MaisGuinchos.Migrations;
 using MaisGuinchos.Models;
 using MaisGuinchos.Repositorys.Interfaces;
 using MaisGuinchos.Services.Interfaces;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using TowRequest = MaisGuinchos.Models.TowRequest;
 
 namespace MaisGuinchos.Services
 {
     public class TowRequestService : ITowRequestService
     {
-        private readonly ITowRequestRepo _towRequestRepo;   
-        public TowRequestService(ITowRequestRepo towRequestRepo) {
+        private readonly ITowRequestRepo _towRequestRepo;
+        private readonly IHubContext<TowHub> _hubContext;
+
+        public TowRequestService(ITowRequestRepo towRequestRepo, IHubContext<TowHub> hubContext) {
             _towRequestRepo = towRequestRepo;
+            _hubContext = hubContext;
         }
 
         public async Task<Guid> CreateAsync(Guid clientId, CreateTowRequestDto dto)
@@ -36,6 +42,22 @@ namespace MaisGuinchos.Services
 
             await _towRequestRepo.AddAsync(request);
             await _towRequestRepo.SaveChangesAsync();
+
+            await _hubContext.Clients.Group(dto.DriverId.ToString()).SendAsync("ReceiveTowRequest", new
+            {
+                RequestId = request.Id,
+                ClientId = clientId,
+                PickupLat = request.PickupLat,
+                PickupLon = request.PickupLon,
+                DropoffLat = request.DropoffLat,
+                DropoffLon = request.DropoffLon,
+                TotalDistanceKm = request.TotalDistanceKm,
+                DurationMinutes = request.DurationMinutes,
+                SuggestedPrice = request.SuggestedPrice,
+                VehicleType = request.VehicleType,
+                VehicleIssue = request.VehicleIssue,
+                Notes = request.Notes
+            });
 
             return request.Id;
         }
