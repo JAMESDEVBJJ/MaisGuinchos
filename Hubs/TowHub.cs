@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
 
 namespace MaisGuinchos.Hubs
 {
+    [Authorize]
     public class TowHub : Hub
     {
         public override async Task OnConnectedAsync()
