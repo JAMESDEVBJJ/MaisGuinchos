@@ -5,8 +5,6 @@ namespace MaisGuinchos.Models
 {
     public class User : BaseEntity
     {
-        [Key]
-        public Guid Id { get; set; }
 
         [Required]
         [MaxLength(100)]

@@ -2,11 +2,13 @@
 using MaisGuinchos.Dtos.Route;
 using MaisGuinchos.Services;
 using MaisGuinchos.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
 
 namespace MaisGuinchos.Controllers
 {
+    [ApiController]
     [Route("api/[controller]")]
     public class MapsController : ControllerBase
     {
@@ -44,7 +46,7 @@ namespace MaisGuinchos.Controllers
             if (string.IsNullOrEmpty(routeDto.Destination))
                 return BadRequest("Destino inválido");
 
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
@@ -82,6 +84,52 @@ namespace MaisGuinchos.Controllers
                 return BadRequest("Erro ao calcular rota");
 
             return Ok(route);
+        }
+
+        [HttpPost("route/calculate/driver")]
+        public async Task<IActionResult> CalculateRouteDriver([FromBody] CalculateRouteDTO routeDto)
+        {
+            if (routeDto.DriverLat == null || routeDto.DriverLon == null)
+                return BadRequest("Cordenadas do motorista inválidas.");
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var route = await _mapsService.GetRoute(
+                routeDto.OriginLat,
+                routeDto.OriginLon,
+                routeDto.DriverLat,
+                routeDto.DriverLon
+            );
+
+            if (route == null)
+                return BadRequest("Erro ao calcular rota.");
+
+            route.PriceEstimate = route.PriceEstimate / 2;
+
+            return Ok(route);
+        }
+
+        [Authorize(Roles = "Motorista,Cliente")]
+        [HttpGet("last-location")]
+        public async Task<IActionResult> GetLastLocation()
+        {
+            var sub = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+          ?? User.FindFirst("sub")?.Value;
+            if (string.IsNullOrEmpty(sub)) return Unauthorized();
+
+            var userId = Guid.Parse(sub);
+
+            var lastLocation = await _mapsService.GetLastLocationAsync(userId);
+
+            if (lastLocation == null)
+            {
+                return NotFound("Nenhuma localização encontrada para o usuário.");
+            }
+
+            return Ok(lastLocation);
         }
     }
 }

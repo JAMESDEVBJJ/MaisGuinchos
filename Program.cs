@@ -1,4 +1,5 @@
 ﻿using MaisGuinchos;
+using MaisGuinchos.Hubs;
 using MaisGuinchos.Middlewares;
 using MaisGuinchos.Repositorys;
 using MaisGuinchos.Repositorys.Interfaces;
@@ -18,10 +19,13 @@ builder.Services.AddScoped<IUserRepo, UserRepo>();
 builder.Services.AddScoped<ILocationRepo, LocationRepo>();
 builder.Services.AddScoped<IGuinchoService, GuinchoService>();
 builder.Services.AddScoped<IGuinchoRepo, GuinchoRepo>();
+builder.Services.AddScoped<ITowRequestService, TowRequestService>();
+builder.Services.AddScoped<ITowRequestRepo, TowRequestRepo>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddHttpClient<IMapsService, MapsService>();
 builder.Services.AddControllers();          
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSignalR();
 
 builder.Services.AddCors(options =>
 {
@@ -31,7 +35,8 @@ builder.Services.AddCors(options =>
             policy
                 .WithOrigins("http://localhost:5173")
                 .AllowAnyHeader()
-                .AllowAnyMethod();
+                .AllowAnyMethod()
+                .AllowCredentials();
         });
 });
 
@@ -41,7 +46,8 @@ builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(options =>
+})
+.AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
     {
@@ -51,9 +57,12 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"])),
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(jwtSettings["Key"])
+        ),
         ClockSkew = TimeSpan.Zero
     };
+
 });
 
 var app = builder.Build();
@@ -74,6 +83,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<TowHub>("/towhub");
 
 app.Run();
 
