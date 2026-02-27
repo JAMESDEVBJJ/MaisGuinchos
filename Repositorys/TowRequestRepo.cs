@@ -27,5 +27,13 @@ namespace MaisGuinchos.Repositorys
         {
             await _appDbContext.SaveChangesAsync();
         }
+
+        public async Task<List<TowRequest>> GetPendingsAsync(Guid driverId)
+        {
+            return await _appDbContext.TowRequests
+                .Include(x => x.Client)
+                .Where(tr => tr.DriverId == driverId && tr.Status == TowRequestStatus.WaitingDriverResponse)
+                .ToListAsync();
+        }
     }
 }

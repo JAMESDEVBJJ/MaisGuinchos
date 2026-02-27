@@ -8,5 +8,7 @@ namespace MaisGuinchos.Services.Interfaces
         Task<Guid> CreateAsync(Guid clientId, CreateTowRequestDto dto);
 
         Task<TowRequest> GetTowRequestById(Guid towRequestId);
+
+        Task<List<GetTowsPendingsDTO>> GetTowsPendings(Guid driverId);
     }
 }

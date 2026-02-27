@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MaisGuinchos.Controllers
 {
-    [Authorize(Roles = "Cliente")]
     [ApiController]
     [Route("api/[controller]")]
     public class TowRequestsController : ControllerBase
@@ -18,9 +17,10 @@ namespace MaisGuinchos.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Client")]
         public async Task<IActionResult> CreateTowRequest([FromBody] CreateTowRequestDto dto)
         {
-            var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value; 
+            var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrWhiteSpace(idClaim) || !Guid.TryParse(idClaim, out var clientId))
             {
@@ -39,6 +39,22 @@ namespace MaisGuinchos.Controllers
             if (towRequest == null)
                 return NotFound();
             return Ok(towRequest);
+        }
+
+        [HttpGet("pendings")]
+        [Authorize(Roles = "Motorista")]
+        public async Task<IActionResult> GetPendingTowRequests()
+        {
+            var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(idClaim) || !Guid.TryParse(idClaim, out var driverId))
+            {
+                return Unauthorized();
+            }
+
+            var pendingRequests = await _towRequestService.GetTowsPendings(driverId);
+
+            return Ok(pendingRequests);
         }
     }
 }

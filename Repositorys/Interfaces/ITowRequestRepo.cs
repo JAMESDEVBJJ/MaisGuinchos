@@ -7,5 +7,7 @@ namespace MaisGuinchos.Repositorys.Interfaces
         Task AddAsync(TowRequest request);
         Task<TowRequest?> GetByIdAsync(Guid id);
         Task SaveChangesAsync();
+
+        Task<List<TowRequest>> GetPendingsAsync(Guid driverId);
     }
 }

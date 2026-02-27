@@ -67,5 +67,33 @@ namespace MaisGuinchos.Services
             var request = await _towRequestRepo.GetByIdAsync(towRequestId);
             return request ?? throw new Exception("Tow request not found");
         }
+
+        public async Task<List<GetTowsPendingsDTO>> GetTowsPendings(Guid driverId)
+        {
+            var tows = await _towRequestRepo.GetPendingsAsync(driverId);
+
+            if (tows == null || !tows.Any())
+                return new List<GetTowsPendingsDTO>();
+
+            var result = tows.Select(t => new GetTowsPendingsDTO
+            {
+                Id = t.Id,
+                ClientName = t.Client.Name,
+                ClientId = t.ClientId,
+                PickupLat = t.PickupLat,
+                PickupLon = t.PickupLon,
+                DropoffLat = t.DropoffLat,
+                DropoffLon = t.DropoffLon,
+                TotalDistanceKm = t.TotalDistanceKm,
+                DurationMinutes = t.DurationMinutes,
+                SuggestedPrice = t.SuggestedPrice,
+                VehicleType = t.VehicleType,
+                VehicleIssue = t.VehicleIssue,
+                Notes = t.Notes,
+                Status = t.Status
+            }).ToList();
+
+            return result;
+        }
     }
 }
