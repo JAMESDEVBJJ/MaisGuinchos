@@ -90,7 +90,8 @@ namespace MaisGuinchos.Services
                 VehicleType = t.VehicleType,
                 VehicleIssue = t.VehicleIssue,
                 Notes = t.Notes,
-                Status = t.Status
+                Status = t.Status,
+                CreatedAt = t.CreatedAt
             }).ToList();
 
             return result;

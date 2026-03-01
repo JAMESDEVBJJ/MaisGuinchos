@@ -17,7 +17,7 @@ namespace MaisGuinchos.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Client")]
+        [Authorize(Roles = "Cliente")]
         public async Task<IActionResult> CreateTowRequest([FromBody] CreateTowRequestDto dto)
         {
             var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -37,7 +37,7 @@ namespace MaisGuinchos.Controllers
         {
             var towRequest = await _towRequestService.GetTowRequestById(id);
             if (towRequest == null)
-                return NotFound();
+                return NotFound("Nenhum pedido de reboque encontrado.");
             return Ok(towRequest);
         }
 

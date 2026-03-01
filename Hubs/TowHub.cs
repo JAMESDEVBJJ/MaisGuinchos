@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using System.Security.Claims;
 
 namespace MaisGuinchos.Hubs
 {
@@ -8,11 +9,21 @@ namespace MaisGuinchos.Hubs
     {
         public override async Task OnConnectedAsync()
         {
-            var userId = Context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var role = Context.User?.FindFirst(ClaimTypes.Role)?.Value;
 
             if (!string.IsNullOrEmpty(userId))
             {
-                await Groups.AddToGroupAsync(Context.ConnectionId, userId);
+                if (role == "Motorista")
+                {
+                    await Groups.AddToGroupAsync(Context.ConnectionId, userId);
+                }
+
+                if (role == "Cliente")
+                {
+                    await Groups.AddToGroupAsync(Context.ConnectionId, "Clientes");
+                }
             }
     
             await base.OnConnectedAsync();
