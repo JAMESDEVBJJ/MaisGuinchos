@@ -29,5 +29,7 @@ namespace MaisGuinchos.Dtos.Tow
         public string? Notes { get; set; }
 
         public TowRequestStatus Status { get; set; }
+
+        public DateTime CreatedAt { get; set; }
     }
 }

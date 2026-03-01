@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace MaisGuinchos.Dtos
+namespace MaisGuinchos.Dtos.User
 {
     public class UpdUserDto
     {
