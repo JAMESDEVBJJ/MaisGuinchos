@@ -126,6 +126,7 @@ namespace MaisGuinchos.Services
             //towRequest.CounterOfferDriverId = driverId; tow global prevista para o futuro, caso seja necessário identificar qual motorista fez a contra oferta
             
             towRequest.CounterOfferAt = DateTime.UtcNow;
+            towRequest.UpdatedAt = DateTime.UtcNow;
 
             towRequest.Status = TowRequestStatus.Negotiating;
 

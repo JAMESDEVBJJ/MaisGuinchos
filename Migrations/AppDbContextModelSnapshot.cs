@@ -111,6 +111,21 @@ namespace MaisGuinchos.Migrations
                     b.Property<Guid>("ClientId")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime?>("CounterOfferAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CounterOfferDriverId")
+                        .HasColumnType("text");
+
+                    b.Property<decimal?>("CounterOfferPercent")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("CounterOfferPrice")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("CounterOfferReason")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 

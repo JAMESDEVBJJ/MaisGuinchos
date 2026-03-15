@@ -2,6 +2,7 @@
 using MaisGuinchos.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace MaisGuinchos.Controllers
 {
@@ -61,7 +62,12 @@ namespace MaisGuinchos.Controllers
         [Authorize(Roles = "Motorista")]
         public async Task<IActionResult> TowRequestCounterOffer(Guid id, [FromBody] TowRequestCounterOfferDto counterOffer)
         {
-            var counterOfferUpd = await _towRequestService.UpdateTowRequestCounterOffer(id, counterOffer);
+            if (counterOffer == null)
+                return BadRequest("Dados inválidos");
+
+            var result = await _towRequestService.UpdateTowRequestCounterOffer(id, counterOffer);
+
+            return Ok(result);
         }
     }
 }
