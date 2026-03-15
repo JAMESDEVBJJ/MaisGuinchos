@@ -104,5 +104,35 @@ namespace MaisGuinchos.Services
 
             return result;
         }
+
+        public async Task<TowRequest> UpdateTowRequestCounterOffer(Guid id, TowRequestCounterOfferDto counterOffer)
+        {
+            var towRequest = _towRequestRepo.GetByIdAsync(id).Result;
+
+            if (towRequest == null)
+            {
+                throw new Exception("TowRequest não encontrada");
+            }
+
+            if (towRequest.Status != TowRequestStatus.WaitingDriverResponse)
+            {
+                throw new Exception("Contra oferta só pode ser feita em solicitações pendentes");
+            }
+                
+            towRequest.CounterOfferPrice = counterOffer.NewPrice;
+            towRequest.CounterOfferPercent = counterOffer.Percent;
+            towRequest.CounterOfferReason = counterOffer.Reason;
+
+            //towRequest.CounterOfferDriverId = driverId; tow global prevista para o futuro, caso seja necessário identificar qual motorista fez a contra oferta
+            
+            towRequest.CounterOfferAt = DateTime.UtcNow;
+
+            towRequest.Status = TowRequestStatus.Negotiating;
+
+            await _towRequestRepo.UpdateCounterOfferAsync(towRequest);
+
+            return towRequest;
+        }
+
     }
 }

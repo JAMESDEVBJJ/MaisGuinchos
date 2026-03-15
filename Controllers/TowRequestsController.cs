@@ -56,5 +56,12 @@ namespace MaisGuinchos.Controllers
 
             return Ok(pendingRequests);
         }
+
+        [HttpPut("{id}/counter-offer")]
+        [Authorize(Roles = "Motorista")]
+        public async Task<IActionResult> TowRequestCounterOffer(Guid id, [FromBody] TowRequestCounterOfferDto counterOffer)
+        {
+            var counterOfferUpd = await _towRequestService.UpdateTowRequestCounterOffer(id, counterOffer);
+        }
     }
 }

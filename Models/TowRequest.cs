@@ -55,6 +55,16 @@ namespace MaisGuinchos.Models
         [MaxLength(500)]
         public string? Notes { get; set; }
 
+        public decimal? CounterOfferPrice { get; set; }
+
+        public decimal? CounterOfferPercent { get; set; }
+
+        public string? CounterOfferReason { get; set; }
+
+        public string? CounterOfferDriverId { get; set; }
+
+        public DateTime? CounterOfferAt { get; set; }
+
         [Required]
         public TowRequestStatus Status { get; set; }
     }
