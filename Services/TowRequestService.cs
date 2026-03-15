@@ -105,9 +105,9 @@ namespace MaisGuinchos.Services
             return result;
         }
 
-        public async Task<TowRequest> UpdateTowRequestCounterOffer(Guid id, TowRequestCounterOfferDto counterOffer)
+        public async Task<PutTowCounterOfferDTO> UpdateTowRequestCounterOffer(Guid id, TowRequestCounterOfferDto counterOffer)
         {
-            var towRequest = _towRequestRepo.GetByIdAsync(id).Result;
+            var towRequest = await _towRequestRepo.GetByIdAsync(id);
 
             if (towRequest == null)
             {
@@ -132,7 +132,37 @@ namespace MaisGuinchos.Services
 
             await _towRequestRepo.UpdateCounterOfferAsync(towRequest);
 
-            return towRequest;
+            return new PutTowCounterOfferDTO
+            {
+                Id = towRequest.Id,
+
+                ClientId = towRequest.ClientId,
+                ClientName = towRequest.Client.Name,
+
+                DriverId = towRequest.DriverId,
+                DriverName = towRequest.Driver.Name,
+
+                PickupLat = towRequest.PickupLat,
+                PickupLon = towRequest.PickupLon,
+
+                DropoffLat = towRequest.DropoffLat,
+                DropoffLon = towRequest.DropoffLon,
+
+                TotalDistanceKm = towRequest.TotalDistanceKm,
+                DurationMinutes = towRequest.DurationMinutes,
+
+                SuggestedPrice = towRequest.SuggestedPrice,
+                FinalPrice = towRequest.FinalPrice,
+
+                CounterOfferPrice = towRequest.CounterOfferPrice,
+                CounterOfferPercent = towRequest.CounterOfferPercent,
+                CounterOfferReason = towRequest.CounterOfferReason,
+                CounterOfferAt = towRequest.CounterOfferAt,
+
+                Status = (int)towRequest.Status,
+
+                CreatedAt = towRequest.CreatedAt
+            };
         }
 
     }
