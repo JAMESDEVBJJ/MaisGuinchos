@@ -51,7 +51,7 @@ namespace MaisGuinchos.Services
 
             await _hubContext.Clients.Group(dto.DriverId.ToString()).SendAsync("ReceiveTowRequest", new GetTowsPendingsDTO
             {
-                RequestId = request.Id,
+                Id = request.Id,
                 ClientId = clientId,
                 ClientName = clientName,
                 PickupLat = request.PickupLat,
