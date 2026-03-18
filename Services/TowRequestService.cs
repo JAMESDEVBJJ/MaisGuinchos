@@ -132,6 +132,29 @@ namespace MaisGuinchos.Services
 
             await _towRequestRepo.UpdateCounterOfferAsync(towRequest);
 
+            await _hubContext.Clients.User(towRequest.ClientId.ToString()).SendAsync("ReceiveCounterOffer", new PutTowCounterOfferDTO
+            {
+                Id = towRequest.Id,
+                ClientId = towRequest.ClientId,
+                ClientName = towRequest.Client.Name,
+                DriverId = towRequest.DriverId,
+                DriverName = towRequest.Driver.Name,
+                PickupLat = towRequest.PickupLat,
+                PickupLon = towRequest.PickupLon,
+                DropoffLat = towRequest.DropoffLat,
+                DropoffLon = towRequest.DropoffLon,
+                TotalDistanceKm = towRequest.TotalDistanceKm,
+                DurationMinutes = towRequest.DurationMinutes,
+                SuggestedPrice = towRequest.SuggestedPrice,
+                FinalPrice = towRequest.FinalPrice,
+                CounterOfferPrice = towRequest.CounterOfferPrice,
+                CounterOfferPercent = towRequest.CounterOfferPercent,
+                CounterOfferReason = towRequest.CounterOfferReason,
+                CounterOfferAt = towRequest.CounterOfferAt,
+                Status = (int)towRequest.Status,
+                CreatedAt = towRequest.CreatedAt
+            });
+
             return new PutTowCounterOfferDTO
             {
                 Id = towRequest.Id,

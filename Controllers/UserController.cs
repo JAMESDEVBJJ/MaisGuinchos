@@ -66,7 +66,7 @@ namespace MaisGuinchos.Controllers
             return Ok(user);
         }
 
-        [HttpPost("guincho")]
+        [HttpPost("")]
         public async Task<IActionResult> AddUser([FromForm] CreateUserDTO user)
         {
             var userAdd = await _userService.AddUser(user);
