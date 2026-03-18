@@ -35,5 +35,13 @@ namespace MaisGuinchos.Repositorys
                 .Where(tr => tr.DriverId == driverId && tr.Status == TowRequestStatus.WaitingDriverResponse)
                 .ToListAsync();
         }
+
+        public async Task<TowRequest> UpdateCounterOfferAsync(TowRequest towRequest)
+        {
+            _appDbContext.TowRequests.Update(towRequest);
+            await _appDbContext.SaveChangesAsync();
+
+            return towRequest;
+        }
     }
 }

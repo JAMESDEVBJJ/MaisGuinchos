@@ -14,10 +14,12 @@ namespace MaisGuinchos.Services
     {
         private readonly ITowRequestRepo _towRequestRepo;
         private readonly IHubContext<TowHub> _hubContext;
+        private readonly IUserService _userService;
 
-        public TowRequestService(ITowRequestRepo towRequestRepo, IHubContext<TowHub> hubContext) {
+        public TowRequestService(ITowRequestRepo towRequestRepo, IHubContext<TowHub> hubContext, IUserService userService) {
             _towRequestRepo = towRequestRepo;
             _hubContext = hubContext;
+            _userService = userService;
         }
 
         public async Task<Guid> CreateAsync(Guid clientId, CreateTowRequestDto dto)
@@ -43,10 +45,15 @@ namespace MaisGuinchos.Services
             await _towRequestRepo.AddAsync(request);
             await _towRequestRepo.SaveChangesAsync();
 
-            await _hubContext.Clients.Group(dto.DriverId.ToString()).SendAsync("ReceiveTowRequest", new
+            var user = await _userService.GetUserById(clientId);
+
+            var clientName = user?.Name ?? "Unknown Client";
+
+            await _hubContext.Clients.Group(dto.DriverId.ToString()).SendAsync("ReceiveTowRequest", new GetTowsPendingsDTO
             {
                 RequestId = request.Id,
                 ClientId = clientId,
+                ClientName = clientName,
                 PickupLat = request.PickupLat,
                 PickupLon = request.PickupLon,
                 DropoffLat = request.DropoffLat,
@@ -56,7 +63,8 @@ namespace MaisGuinchos.Services
                 SuggestedPrice = request.SuggestedPrice,
                 VehicleType = request.VehicleType,
                 VehicleIssue = request.VehicleIssue,
-                Notes = request.Notes
+                Notes = request.Notes,
+                CreatedAt = request.CreatedAt,
             });
 
             return request.Id;
@@ -96,5 +104,89 @@ namespace MaisGuinchos.Services
 
             return result;
         }
+
+        public async Task<PutTowCounterOfferDTO> UpdateTowRequestCounterOffer(Guid id, TowRequestCounterOfferDto counterOffer)
+        {
+            var towRequest = await _towRequestRepo.GetByIdAsync(id);
+
+            if (towRequest == null)
+            {
+                throw new Exception("TowRequest não encontrada");
+            }
+
+            if (towRequest.Status != TowRequestStatus.WaitingDriverResponse)
+            {
+                throw new Exception("Contra oferta só pode ser feita em solicitações pendentes");
+            }
+                
+            towRequest.CounterOfferPrice = counterOffer.NewPrice;
+            towRequest.CounterOfferPercent = counterOffer.Percent;
+            towRequest.CounterOfferReason = counterOffer.Reason;
+
+            //towRequest.CounterOfferDriverId = driverId; tow global prevista para o futuro, caso seja necessário identificar qual motorista fez a contra oferta
+            
+            towRequest.CounterOfferAt = DateTime.UtcNow;
+            towRequest.UpdatedAt = DateTime.UtcNow;
+
+            towRequest.Status = TowRequestStatus.Negotiating;
+
+            await _towRequestRepo.UpdateCounterOfferAsync(towRequest);
+
+            await _hubContext.Clients.User(towRequest.ClientId.ToString()).SendAsync("ReceiveCounterOffer", new PutTowCounterOfferDTO
+            {
+                Id = towRequest.Id,
+                ClientId = towRequest.ClientId,
+                ClientName = towRequest.Client.Name,
+                DriverId = towRequest.DriverId,
+                DriverName = towRequest.Driver.Name,
+                PickupLat = towRequest.PickupLat,
+                PickupLon = towRequest.PickupLon,
+                DropoffLat = towRequest.DropoffLat,
+                DropoffLon = towRequest.DropoffLon,
+                TotalDistanceKm = towRequest.TotalDistanceKm,
+                DurationMinutes = towRequest.DurationMinutes,
+                SuggestedPrice = towRequest.SuggestedPrice,
+                FinalPrice = towRequest.FinalPrice,
+                CounterOfferPrice = towRequest.CounterOfferPrice,
+                CounterOfferPercent = towRequest.CounterOfferPercent,
+                CounterOfferReason = towRequest.CounterOfferReason,
+                CounterOfferAt = towRequest.CounterOfferAt,
+                Status = (int)towRequest.Status,
+                CreatedAt = towRequest.CreatedAt
+            });
+
+            return new PutTowCounterOfferDTO
+            {
+                Id = towRequest.Id,
+
+                ClientId = towRequest.ClientId,
+                ClientName = towRequest.Client.Name,
+
+                DriverId = towRequest.DriverId,
+                DriverName = towRequest.Driver.Name,
+
+                PickupLat = towRequest.PickupLat,
+                PickupLon = towRequest.PickupLon,
+
+                DropoffLat = towRequest.DropoffLat,
+                DropoffLon = towRequest.DropoffLon,
+
+                TotalDistanceKm = towRequest.TotalDistanceKm,
+                DurationMinutes = towRequest.DurationMinutes,
+
+                SuggestedPrice = towRequest.SuggestedPrice,
+                FinalPrice = towRequest.FinalPrice,
+
+                CounterOfferPrice = towRequest.CounterOfferPrice,
+                CounterOfferPercent = towRequest.CounterOfferPercent,
+                CounterOfferReason = towRequest.CounterOfferReason,
+                CounterOfferAt = towRequest.CounterOfferAt,
+
+                Status = (int)towRequest.Status,
+
+                CreatedAt = towRequest.CreatedAt
+            };
+        }
+
     }
 }

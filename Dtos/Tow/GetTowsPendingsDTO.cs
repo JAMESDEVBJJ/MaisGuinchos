@@ -31,5 +31,7 @@ namespace MaisGuinchos.Dtos.Tow
         public TowRequestStatus Status { get; set; }
 
         public DateTime CreatedAt { get; set; }
+
+        public Guid? RequestId { get; set; }
     }
 }
