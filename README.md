@@ -1,51 +1,50 @@
-🚗 +Guinchos BE (Mais Guinchos Backend)
+# 📌 +Guinchos BE (Mais Guinchos Backend)
 
-Backend da aplicação Mais Guinchos, responsável por gerenciar solicitações de guincho em tempo real entre clientes e motoristas.
+Backend da aplicação **Mais Guinchos**, responsável por gerenciar solicitações de guincho em tempo real entre clientes e motoristas.
 
-O sistema atende motoristas, clientes e empresas, permitindo:
+O sistema atende **motoristas, clientes e empresas**, permitindo:
 
-Definir localização e destino
+- Definir localização e destino  
+- Buscar guinchos próximos  
+- Calcular rota e viagem  
+- Criar solicitações de reboque  
+- Motoristas aceitarem ou enviarem contra propostas  
 
-Buscar guinchos próximos
+---
 
-Calcular rota e viagem
+## 📌 Tecnologias utilizadas
 
-Criar solicitações de reboque
+- **C#**
+- **ASP.NET Core**
+- **Entity Framework Core**
+- **PostgreSQL**
+- **JWT (autenticação e autorização)**
+- **SignalR (WebSockets)**
+- **Middlewares**
+- **Arquitetura em camadas (Controller / Service / Repository)**
 
-Motoristas aceitarem ou enviarem contra propostas
+---
 
-📌 Tecnologias utilizadas
-
-C#
-
-ASP.NET Core
-
-Entity Framework Core
-
-PostgreSQL
-
-JWT (autenticação e autorização)
-
-SignalR (WebSockets - tempo real)
-
-Middlewares
-
-Arquitetura em camadas (Controller / Service / Repository)
-
-⚙️ Pré-requisitos
+## ⚙️ Pré-requisitos
 
 Antes de rodar o projeto, você precisa ter instalado:
 
-.NET SDK (recomendado versão 8 ou superior)
+- **.NET SDK** (recomendado versão 8 ou superior)
+- **PostgreSQL**
+- **Git**
 
-PostgreSQL
+---
 
-Git
+## 🚀 Como rodar o projeto
 
-🚀 Como rodar o projeto
-1. Clonar o repositório
+### 1. Clonar o repositório
+
+```bash
 git clone https://github.com/JAMESDEVBJJ/MaisGuinchos
+
 cd MaisGuinchos
+```
+
 2. Restaurar dependências
 dotnet restore
 3. Configurar o banco de dados
