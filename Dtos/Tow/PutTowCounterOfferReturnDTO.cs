@@ -25,7 +25,6 @@
         public decimal? CounterOfferPrice { get; set; }
         public decimal? CounterOfferPercent { get; set; }
         public string? CounterOfferReason { get; set; }
-        public Guid? CounterOfferDriverId { get; set; }
         public DateTime? CounterOfferAt { get; set; }
 
         public int Status { get; set; }
