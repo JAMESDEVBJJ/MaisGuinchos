@@ -45,40 +45,46 @@ git clone https://github.com/JAMESDEVBJJ/MaisGuinchos
 cd MaisGuinchos
 ```
 
-2. Restaurar dependências
+### 2. Restaurar dependências
 dotnet restore
-3. Configurar o banco de dados
+### 3. Configurar o banco de dados
 
-No arquivo appsettings.json, configure sua string de conexão:
+### No arquivo appsettings.json, configure sua string de conexão:
 
+```
 "ConnectionStrings": {
   "DefaultConnection": "Host=localhost;Port=5432;Database=MaisGuinchos;Username=seu_user;Password=sua_senha"
 }
-4. Rodar migrations (Entity Framework)
+```
+
+### 4. Rodar migrations (Entity Framework)
 dotnet ef database update
-5. Executar o projeto
+### 5. Executar o projeto
+```
 dotnet run
-🔄 Fluxo da aplicação
+```
 
-Cliente define localização e destino
+## 🔄 Fluxo da aplicação
 
-Sistema calcula a rota e viagem
+- Cliente define localização e destino
 
-Cliente cria uma solicitação de guincho
+- Sistema calcula a rota e viagem
 
-Motoristas próximos recebem a solicitação em tempo real (SignalR)
+- Cliente cria uma solicitação de guincho
 
-O motorista pode:
+- Motoristas próximos recebem a solicitação em tempo real (SignalR)
 
-✅ Aceitar
+**O motorista pode:**
 
-❌ Recusar
+- ✅ Aceitar
 
-💰 Enviar contra proposta (ajuste de valor com justificativa)
+- ❌ Recusar
 
-👉 O cliente recebe todas as atualizações instantaneamente
+- 💰 Enviar contra proposta (ajuste de valor com justificativa)
 
-🔐 Autenticação (JWT)
+- 👉 O cliente recebe todas as atualizações instantaneamente
+
+### 🔐 Autenticação (JWT)
 
 A aplicação utiliza JWT (JSON Web Token) para autenticação.
 
@@ -86,72 +92,77 @@ Usuários precisam realizar login para acessar rotas protegidas
 
 O token deve ser enviado no header:
 
+```
 Authorization: Bearer {seu_token}
-⚙️ Configuração JWT
+```
 
-No arquivo appsettings.json:
+### ⚙️ Configuração JWT
+**No arquivo appsettings.json:**
 
+```
 "Jwt": {
   "Key": "sua-chave-secreta",
   "Issuer": "MaisGuinchos"
 }
-🔄 Comunicação em tempo real
+```
 
-O sistema utiliza SignalR para:
+### 🔄 Comunicação em tempo real
 
-Envio de solicitações de guincho em tempo real
+**O sistema utiliza SignalR para:**
 
-Recebimento de propostas e contra propostas
+- Envio de solicitações de guincho em tempo real
 
-Atualização instantânea entre cliente e motorista
+- Recebimento de propostas e contra propostas
 
-🧱 Arquitetura
+- Atualização instantânea entre cliente e motorista
 
-O projeto segue o padrão de arquitetura em camadas:
+### 🧱 Arquitetura
 
-Controllers → entrada das requisições HTTP
+**O projeto segue o padrão de arquitetura em camadas:**
 
-Services → regras de negócio
+- Controllers → entrada das requisições HTTP
 
-Repositories → acesso ao banco de dados
+- Services → regras de negócio
 
-DTOs → transporte de dados
+- Repositories → acesso ao banco de dados
 
-Entities → modelos do banco
+- DTOs → transporte de dados
 
-Interfaces → desacoplamento
+- Entities → modelos do banco
 
-DI (Dependency Injection) → injeção de dependência
+- Interfaces → desacoplamento
 
-Middlewares → tratamento de exceções e pipeline
+- DI (Dependency Injection) → injeção de dependência
 
-📦 Funcionalidades
+- Middlewares → tratamento de exceções e pipeline
 
-Cadastro e login de usuários
+###📦 Funcionalidades
 
-Autenticação com JWT
+- Cadastro e login de usuários
 
-Criação de solicitações de guincho personalizadas
+- Autenticação com JWT
 
-Envio de propostas por motoristas
+- Criação de solicitações de guincho personalizadas
 
-Contra propostas em tempo real (SignalR)
+- Envio de propostas por motoristas
 
-Atualização de status das solicitações
+- Contra propostas em tempo real (SignalR)
 
-Histórico de localizações por usuários
+- Atualização de status das solicitações
 
-Filtros de busca
+- Histórico de localizações por usuários
 
-Consulta de dados de usuários
+- Filtros de busca
 
-Persistência de imagens no disco
+- Consulta de dados de usuários
 
-📌 Observações
+- Persistência de imagens no disco
 
-Projeto em desenvolvimento
+### 📌 Observações
 
-Pode conter melhorias futuras como:
+##Projeto em desenvolvimento
+
+##Vai conter melhorias futuras como:
 
 Logs estruturados
 
@@ -159,6 +170,7 @@ Testes automatizados
 
 Dockerização
 
-👨‍💻 Autor
+Histórico de propostas...
+# 👨‍💻 Autor
 
-Desenvolvido por James Daniel Xavier
+## Desenvolvido por James Daniel Xavier
