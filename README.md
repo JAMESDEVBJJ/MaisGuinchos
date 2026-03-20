@@ -46,10 +46,14 @@ cd MaisGuinchos
 ```
 
 ### 2. Restaurar dependências
+
+```
 dotnet restore
+```
+
 ### 3. Configurar o banco de dados
 
-### No arquivo appsettings.json, configure sua string de conexão:
+** No arquivo appsettings.json, configure sua string de conexão:**
 
 ```
 "ConnectionStrings": {
@@ -58,8 +62,13 @@ dotnet restore
 ```
 
 ### 4. Rodar migrations (Entity Framework)
+
+```
 dotnet ef database update
+```
+
 ### 5. Executar o projeto
+
 ```
 dotnet run
 ```
@@ -158,7 +167,7 @@ Authorization: Bearer {seu_token}
 
 - Persistência de imagens no disco
 
-### 📌 Observações
+## 📌 Observações
 
 ##Projeto em desenvolvimento
 
