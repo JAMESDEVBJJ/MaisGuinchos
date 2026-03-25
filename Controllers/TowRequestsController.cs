@@ -69,5 +69,15 @@ namespace MaisGuinchos.Controllers
 
             return Ok(result);
         }
+
+        [HttpPut("{id}/reject-counter-offer")]
+        [Authorize(Roles = "Cliente")]
+
+        public async Task<IActionResult> RejectCounterOffer(Guid id)
+        {
+            var result = await _towRequestService.RejectCounterOffer(id);
+
+            return Ok(result);
+        }
     }
 }

@@ -188,5 +188,36 @@ namespace MaisGuinchos.Services
             };
         }
 
+        public async Task<PutTowCancelCounterOfferDTO> RejectCounterOffer(Guid idTowRequest)
+        {
+            var towRequest = await _towRequestRepo.GetByIdAsync(idTowRequest);
+
+            if (towRequest == null)
+            {
+                throw new Exception("TowRequest não encontrada");
+            }
+
+            if (towRequest.Status != TowRequestStatus.CounterOfferSent)
+            {
+                throw new Exception("Contra oferta só pode ser rejeitada se tiver sido enviada");
+            }
+
+            towRequest.UpdatedAt = DateTime.UtcNow;
+            towRequest.Status = TowRequestStatus.CounterOfferRejected;
+
+            await _towRequestRepo.UpdateCounterOfferAsync(towRequest);
+
+            await _hubContext.Clients.User(towRequest.DriverId.ToString()).SendAsync("CounterOfferRejected", new PutTowCancelCounterOfferDTO
+            {
+                Id = towRequest.Id,
+                Status = (int)towRequest.Status
+            });
+
+            return new PutTowCancelCounterOfferDTO
+            {
+                Id = towRequest.Id,
+                Status = (int)towRequest.Status
+            };
+        }
     }
 }
