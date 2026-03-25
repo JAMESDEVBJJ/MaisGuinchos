@@ -71,9 +71,10 @@ namespace MaisGuinchos.Models
     public enum TowRequestStatus
     {
         WaitingDriverResponse = 1,
-        Negotiating = 2,
-        Accepted = 3,
-        Rejected = 4,
-        Cancelled = 5
+        CounterOfferSent = 2,
+        CounterOfferRejected = 3,
+        Accepted = 4,
+        Rejected = 5,
+        Cancelled = 6
     }
 }

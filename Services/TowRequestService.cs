@@ -128,7 +128,7 @@ namespace MaisGuinchos.Services
             towRequest.CounterOfferAt = DateTime.UtcNow;
             towRequest.UpdatedAt = DateTime.UtcNow;
 
-            towRequest.Status = TowRequestStatus.Negotiating;
+            towRequest.Status = TowRequestStatus.CounterOfferSent;
 
             await _towRequestRepo.UpdateCounterOfferAsync(towRequest);
 
