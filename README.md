@@ -138,7 +138,7 @@ Authorization: Bearer {seu_token}
 
 - DTOs → transporte de dados
 
-- Entities → modelos do banco
+- Models  → modelos do banco
 
 - Interfaces → desacoplamento
 
