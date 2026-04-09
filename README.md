@@ -164,6 +164,8 @@ Authorization: Bearer {seu_token}
 
 - Filtros de busca
 
+- Cadastro de guincho
+
 - Consulta de dados de usuários
 
 - Persistência de imagens no disco
@@ -180,7 +182,10 @@ Testes automatizados
 
 Dockerização
 
+GPS em tempo real com histórico de trackeamento usando MongoDB/NoSQL
+
 Histórico de propostas...
+
 # 👨‍💻 Autor
 
 ## Desenvolvido por James Daniel Xavier
