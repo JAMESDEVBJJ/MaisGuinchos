@@ -67,6 +67,8 @@ namespace MaisGuinchos.Models
 
         [Required]
         public TowRequestStatus Status { get; set; }
+
+        public TowTravel? TowTravel { get; set; }
     }
     public enum TowRequestStatus
     {
