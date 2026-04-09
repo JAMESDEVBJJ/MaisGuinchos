@@ -8,7 +8,8 @@ O sistema atende **motoristas, clientes e empresas**, permitindo:
 - Buscar guinchos próximos  
 - Calcular rota e viagem  
 - Criar solicitações de reboque  
-- Motoristas aceitarem ou enviarem contra propostas  
+- Motoristas aceitarem ou enviarem contra propostas
+- Rota da viagem e propostas em tempo real
 
 ---
 
