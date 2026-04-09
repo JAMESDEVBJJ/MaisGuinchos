@@ -12,7 +12,7 @@
 
         public int EstimatedArrivalTime { get; set; }
 
-        public TowTravelStatus TowTravelStatus { get; set; }
+        public TowTravelStatus Status { get; set; }
 
         public DateTime? StartedAt { get; set; }
 
