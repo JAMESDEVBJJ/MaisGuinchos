@@ -14,5 +14,7 @@ namespace MaisGuinchos.Services.Interfaces
         Task<PutTowCounterOfferDTO> UpdateTowRequestCounterOffer(Guid id, TowRequestCounterOfferDto counterOffer);
 
         Task<PutTowCancelCounterOfferDTO> RejectCounterOffer(Guid idTowRequest);
+
+        Task<AcceptTowRequestResponseDto> AcceptTowRequest(Guid idTowRequest);
     }
 }

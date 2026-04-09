@@ -10,6 +10,6 @@ namespace MaisGuinchos.Repositorys.Interfaces
 
         Task<List<TowRequest>> GetPendingsAsync(Guid driverId);
 
-        Task<TowRequest> UpdateCounterOfferAsync(TowRequest towRequest);
+        Task<TowRequest> UpdateAsync(TowRequest towRequest);
     }
 }

@@ -40,7 +40,7 @@ namespace MaisGuinchos.Repositorys
                 .ToListAsync();
         }
 
-        public async Task<TowRequest> UpdateCounterOfferAsync(TowRequest towRequest)
+        public async Task<TowRequest> UpdateAsync(TowRequest towRequest)
         {
             _appDbContext.TowRequests.Update(towRequest);
             await _appDbContext.SaveChangesAsync();
