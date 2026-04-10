@@ -270,5 +270,47 @@ namespace MaisGuinchos.Services
 
             return response;
         }
+
+        public async Task<AcceptTowRequestResponseDto> AcceptCounterOffer(Guid idTowRequest)
+        {
+            var towRequest = _towRequestRepo.GetByIdAsync(idTowRequest).Result;
+
+            if (towRequest == null)
+            {
+                throw new NotFoundException("TowRequest não encontrada");
+            }
+
+            if (towRequest.Status != TowRequestStatus.CounterOfferSent)
+            {
+                throw new BadRequestException("Somente contra ofertas enviadas podem ser aceitas pelo cliente.");
+            }
+
+            towRequest.UpdatedAt = DateTime.UtcNow;
+            towRequest.Status = TowRequestStatus.Accepted;
+
+            await _towRequestRepo.UpdateAsync(towRequest);
+
+            var towTravelId = Guid.NewGuid();
+
+            await _towTravelRepo.AddAsync(new Models.TowTravel {
+                Id = towTravelId,
+                TowRequestId = towRequest.Id,
+                DriverId = towRequest.DriverId,
+                FinalPrice = towRequest.CounterOfferPrice ?? towRequest.SuggestedPrice,
+                EstimatedArrivalTime = towRequest.DurationMinutes,
+                Status = TowTravelStatus.Accepted,
+                CreatedAt = DateTime.UtcNow
+            });
+
+            var response = new AcceptTowRequestResponseDto {
+                TowRequestId = towRequest.Id,
+                TowTravelId = towTravelId,
+                TowRequestStatus = towRequest.Status
+            };
+
+            await _hubContext.Clients.User(towRequest.DriverId.ToString()).SendAsync("CounterOfferAccepted", response);
+
+            return response;
+        }
     }
 }
