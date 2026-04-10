@@ -1,4 +1,5 @@
 ﻿using MaisGuinchos.Dtos.Tow;
+using MaisGuinchos.Exceptions;
 using MaisGuinchos.Hubs;
 using MaisGuinchos.Migrations;
 using MaisGuinchos.Models;
@@ -13,13 +14,16 @@ namespace MaisGuinchos.Services
     public class TowRequestService : ITowRequestService
     {
         private readonly ITowRequestRepo _towRequestRepo;
+        private readonly ITowTravelRepo _towTravelRepo;
         private readonly IHubContext<TowHub> _hubContext;
         private readonly IUserService _userService;
 
-        public TowRequestService(ITowRequestRepo towRequestRepo, IHubContext<TowHub> hubContext, IUserService userService) {
+        public TowRequestService(ITowRequestRepo towRequestRepo, IHubContext<TowHub> hubContext, IUserService userService, ITowTravelRepo towTravelRepo)
+        {
             _towRequestRepo = towRequestRepo;
             _hubContext = hubContext;
             _userService = userService;
+            _towTravelRepo = towTravelRepo;
         }
 
         public async Task<Guid> CreateAsync(Guid clientId, CreateTowRequestDto dto)
@@ -118,19 +122,19 @@ namespace MaisGuinchos.Services
             {
                 throw new Exception("Contra oferta só pode ser feita em solicitações pendentes");
             }
-                
+
             towRequest.CounterOfferPrice = counterOffer.NewPrice;
             towRequest.CounterOfferPercent = counterOffer.Percent;
             towRequest.CounterOfferReason = counterOffer.Reason;
 
             //towRequest.CounterOfferDriverId = driverId; tow global prevista para o futuro, caso seja necessário identificar qual motorista fez a contra oferta
-            
+
             towRequest.CounterOfferAt = DateTime.UtcNow;
             towRequest.UpdatedAt = DateTime.UtcNow;
 
-            towRequest.Status = TowRequestStatus.Negotiating;
+            towRequest.Status = TowRequestStatus.CounterOfferSent;
 
-            await _towRequestRepo.UpdateCounterOfferAsync(towRequest);
+            await _towRequestRepo.UpdateAsync(towRequest);
 
             await _hubContext.Clients.User(towRequest.ClientId.ToString()).SendAsync("ReceiveCounterOffer", new PutTowCounterOfferDTO
             {
@@ -188,5 +192,125 @@ namespace MaisGuinchos.Services
             };
         }
 
+        public async Task<PutTowCancelCounterOfferDTO> RejectCounterOffer(Guid idTowRequest)
+        {
+            var towRequest = await _towRequestRepo.GetByIdAsync(idTowRequest);
+
+            if (towRequest == null)
+            {
+                throw new Exception("TowRequest não encontrada");
+            }
+
+            if (towRequest.Status != TowRequestStatus.CounterOfferSent)
+            {
+                throw new Exception("Contra oferta só pode ser rejeitada se tiver sido enviada");
+            }
+
+            towRequest.UpdatedAt = DateTime.UtcNow;
+            towRequest.Status = TowRequestStatus.CounterOfferRejected;
+
+            await _towRequestRepo.UpdateAsync(towRequest);
+
+            await _hubContext.Clients.User(towRequest.DriverId.ToString()).SendAsync("CounterOfferRejected", new PutTowCancelCounterOfferDTO
+            {
+                Id = towRequest.Id,
+                Status = (int)towRequest.Status
+            });
+
+            return new PutTowCancelCounterOfferDTO
+            {
+                Id = towRequest.Id,
+                Status = (int)towRequest.Status
+            };
+        }
+
+        public async Task<AcceptTowRequestResponseDto> AcceptTowRequest(Guid idTowRequest)
+        {
+            var towRequest = await _towRequestRepo.GetByIdAsync(idTowRequest);
+
+            if (towRequest == null)
+            {
+                throw new NotFoundException("TowRequest não encontrada");
+            }
+
+            if (towRequest.Status != TowRequestStatus.WaitingDriverResponse)
+            {
+                throw new BadRequestException("Somente solicitações pendentes podem ser aceita pelo motorista.");
+            }
+
+            towRequest.UpdatedAt = DateTime.UtcNow;
+
+            towRequest.Status = TowRequestStatus.Accepted;
+
+            var towTravelId = Guid.NewGuid();
+
+            var towTravel = new Models.TowTravel
+            {
+                Id = towTravelId,
+                TowRequestId = towRequest.Id,
+                DriverId = towRequest.DriverId,
+                FinalPrice = towRequest.FinalPrice ?? towRequest.SuggestedPrice,
+                EstimatedArrivalTime = towRequest.DurationMinutes,
+                Status = TowTravelStatus.Accepted,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _towTravelRepo.AddAsync(towTravel);
+
+            await _towRequestRepo.UpdateAsync(towRequest);
+
+            var response = new AcceptTowRequestResponseDto
+            {
+                TowRequestId = towRequest.Id,
+                TowTravelId = towTravelId,
+                TowRequestStatus = towRequest.Status
+            };
+
+            await _hubContext.Clients.User(towRequest.ClientId.ToString()).SendAsync("TowRequestAccepted", response);
+
+            return response;
+        }
+
+        public async Task<AcceptTowRequestResponseDto> AcceptCounterOffer(Guid idTowRequest)
+        {
+            var towRequest = _towRequestRepo.GetByIdAsync(idTowRequest).Result;
+
+            if (towRequest == null)
+            {
+                throw new NotFoundException("TowRequest não encontrada");
+            }
+
+            if (towRequest.Status != TowRequestStatus.CounterOfferSent)
+            {
+                throw new BadRequestException("Somente contra ofertas enviadas podem ser aceitas pelo cliente.");
+            }
+
+            towRequest.UpdatedAt = DateTime.UtcNow;
+            towRequest.Status = TowRequestStatus.Accepted;
+
+            await _towRequestRepo.UpdateAsync(towRequest);
+
+            var towTravelId = Guid.NewGuid();
+
+            await _towTravelRepo.AddAsync(new Models.TowTravel {
+                Id = towTravelId,
+                TowRequestId = towRequest.Id,
+                DriverId = towRequest.DriverId,
+                FinalPrice = towRequest.CounterOfferPrice ?? towRequest.SuggestedPrice,
+                EstimatedArrivalTime = towRequest.DurationMinutes,
+                Status = TowTravelStatus.Accepted,
+                CreatedAt = DateTime.UtcNow
+            });
+
+            var response = new AcceptTowRequestResponseDto {
+                TowRequestId = towRequest.Id,
+                TowTravelId = towTravelId,
+                TowRequestStatus = towRequest.Status
+            };
+
+            await _hubContext.Clients.User(towRequest.DriverId.ToString()).SendAsync("CounterOfferAccepted", response);
+
+            return response;
+        }
     }
 }

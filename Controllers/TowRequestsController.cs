@@ -69,5 +69,34 @@ namespace MaisGuinchos.Controllers
 
             return Ok(result);
         }
+
+        [HttpPut("{id}/reject-counter-offer")]
+        [Authorize(Roles = "Cliente")]
+
+        public async Task<IActionResult> RejectCounterOffer(Guid id)
+        {
+            var result = await _towRequestService.RejectCounterOffer(id);
+
+            return Ok(result);
+        }
+
+        [HttpPost("{id}/accept")]
+        [Authorize(Roles = "Motorista")]
+        public async Task<IActionResult> AcceptTowRequest(Guid id)
+        {
+            var result = await _towRequestService.AcceptTowRequest(id);
+            return Ok(result);
+        }
+
+        [HttpPost("{id}/accept-counter-offer")]
+        [Authorize(Roles = "Cliente")]
+        public async Task<IActionResult> AcceptCounterOffer(Guid id)
+        {
+            if (id == Guid.Empty)
+                return BadRequest("ID do pedido de reboque é obrigatório.");
+
+            var result = await _towRequestService.AcceptCounterOffer(id);
+            return Ok(result);
+        }
     }
 }

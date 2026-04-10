@@ -12,5 +12,11 @@ namespace MaisGuinchos.Services.Interfaces
         Task<List<GetTowsPendingsDTO>> GetTowsPendings(Guid driverId);
 
         Task<PutTowCounterOfferDTO> UpdateTowRequestCounterOffer(Guid id, TowRequestCounterOfferDto counterOffer);
+
+        Task<PutTowCancelCounterOfferDTO> RejectCounterOffer(Guid idTowRequest);
+
+        Task<AcceptTowRequestResponseDto> AcceptTowRequest(Guid idTowRequest);
+
+        Task<AcceptTowRequestResponseDto> AcceptCounterOffer(Guid idTowRequest);
     }
 }

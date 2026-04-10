@@ -17,6 +17,8 @@ namespace MaisGuinchos
 
         public DbSet<TowRequest> TowRequests { get; set; }
 
+        public DbSet<TowTravel> TowTravels { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -40,6 +42,18 @@ namespace MaisGuinchos
                 .HasOne(tr => tr.Driver)
                 .WithMany()
                 .HasForeignKey(tr => tr.DriverId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<TowTravel>()
+                .HasOne(tt => tt.TowRequest)
+                .WithOne(tr => tr.TowTravel)
+                .HasForeignKey<TowTravel>(tt => tt.TowRequestId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<TowTravel>()
+                .HasOne(tt => tt.Driver)
+                .WithMany()
+                .HasForeignKey(tt => tt.DriverId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

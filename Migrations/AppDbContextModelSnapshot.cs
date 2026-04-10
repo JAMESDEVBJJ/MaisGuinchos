@@ -183,6 +183,55 @@ namespace MaisGuinchos.Migrations
                     b.ToTable("TowRequests");
                 });
 
+            modelBuilder.Entity("MaisGuinchos.Models.TowTravel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CanceledAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CancellationReason")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("DriverId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("EndedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("EstimatedArrivalTime")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("FinalPrice")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime?>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TowRequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DriverId");
+
+                    b.HasIndex("TowRequestId")
+                        .IsUnique();
+
+                    b.ToTable("TowTravels");
+                });
+
             modelBuilder.Entity("MaisGuinchos.Models.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -271,6 +320,30 @@ namespace MaisGuinchos.Migrations
                     b.Navigation("Client");
 
                     b.Navigation("Driver");
+                });
+
+            modelBuilder.Entity("MaisGuinchos.Models.TowTravel", b =>
+                {
+                    b.HasOne("MaisGuinchos.Models.User", "Driver")
+                        .WithMany()
+                        .HasForeignKey("DriverId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MaisGuinchos.Models.TowRequest", "TowRequest")
+                        .WithOne("TowTravel")
+                        .HasForeignKey("MaisGuinchos.Models.TowTravel", "TowRequestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Driver");
+
+                    b.Navigation("TowRequest");
+                });
+
+            modelBuilder.Entity("MaisGuinchos.Models.TowRequest", b =>
+                {
+                    b.Navigation("TowTravel");
                 });
 
             modelBuilder.Entity("MaisGuinchos.Models.User", b =>

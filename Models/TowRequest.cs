@@ -67,13 +67,16 @@ namespace MaisGuinchos.Models
 
         [Required]
         public TowRequestStatus Status { get; set; }
+
+        public TowTravel? TowTravel { get; set; }
     }
     public enum TowRequestStatus
     {
         WaitingDriverResponse = 1,
-        Negotiating = 2,
-        Accepted = 3,
-        Rejected = 4,
-        Cancelled = 5
+        CounterOfferSent = 2,
+        CounterOfferRejected = 3,
+        Accepted = 4,
+        Rejected = 5,
+        Cancelled = 6
     }
 }
