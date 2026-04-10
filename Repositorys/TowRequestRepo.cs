@@ -16,6 +16,16 @@ namespace MaisGuinchos.Repositorys
             await _appDbContext.TowRequests.AddAsync(request);
         }
 
+        public async Task<bool> HasActiveRequestAsync(Guid clientId, Guid driverId)
+        {
+            return await _appDbContext.TowRequests.AnyAsync(tr =>
+                tr.ClientId == clientId &&
+                tr.DriverId == driverId &&
+                (tr.Status == TowRequestStatus.WaitingDriverResponse ||
+                 tr.Status == TowRequestStatus.Accepted ||
+                 tr.Status == TowRequestStatus.CounterOfferSent));
+        }
+
         public async Task<TowRequest?> GetByIdAsync(Guid id)
         {
             return await _appDbContext.TowRequests

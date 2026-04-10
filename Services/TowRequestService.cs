@@ -5,6 +5,7 @@ using MaisGuinchos.Migrations;
 using MaisGuinchos.Models;
 using MaisGuinchos.Repositorys.Interfaces;
 using MaisGuinchos.Services.Interfaces;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using TowRequest = MaisGuinchos.Models.TowRequest;
@@ -28,6 +29,11 @@ namespace MaisGuinchos.Services
 
         public async Task<Guid> CreateAsync(Guid clientId, CreateTowRequestDto dto)
         {
+            var exists = await _towRequestRepo.HasActiveRequestAsync(clientId, dto.DriverId);
+
+            if (exists)
+                throw new Exception("Já existe uma solicitação ativa para este motorista.");
+
             var request = new TowRequest
             {
                 Id = Guid.NewGuid(),
