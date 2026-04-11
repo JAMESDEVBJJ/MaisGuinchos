@@ -237,7 +237,7 @@ namespace MaisGuinchos.Services
                 throw new NotFoundException("TowRequest não encontrada");
             }
 
-            if (towRequest.Status != TowRequestStatus.WaitingDriverResponse)
+            if (towRequest.Status != TowRequestStatus.WaitingDriverResponse || towRequest.Status != TowRequestStatus.CounterOfferRejected)
             {
                 throw new BadRequestException("Somente solicitações pendentes podem ser aceita pelo motorista.");
             }
