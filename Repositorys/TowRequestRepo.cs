@@ -21,9 +21,7 @@ namespace MaisGuinchos.Repositorys
             return await _appDbContext.TowRequests.AnyAsync(tr =>
                 tr.ClientId == clientId &&
                 tr.DriverId == driverId &&
-                (tr.Status == TowRequestStatus.WaitingDriverResponse ||
-                 tr.Status == TowRequestStatus.Accepted ||
-                 tr.Status == TowRequestStatus.CounterOfferSent));
+                (tr.Status == TowRequestStatus.WaitingDriverResponse)); //bota  || tr.Status == TowRequestStatus.CounterOfferSent e || accept/em corrida por que ainda sao corridas ativas
         }
 
         public async Task<TowRequest?> GetByIdAsync(Guid id)

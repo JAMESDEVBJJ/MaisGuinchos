@@ -1,14 +1,12 @@
 ﻿using MaisGuinchos.Dtos.Tow;
 using MaisGuinchos.Exceptions;
 using MaisGuinchos.Hubs;
-using MaisGuinchos.Migrations;
 using MaisGuinchos.Models;
 using MaisGuinchos.Repositorys.Interfaces;
 using MaisGuinchos.Services.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using TowRequest = MaisGuinchos.Models.TowRequest;
 
 namespace MaisGuinchos.Services
 {
@@ -298,7 +296,7 @@ namespace MaisGuinchos.Services
 
             var towTravelId = Guid.NewGuid();
 
-            await _towTravelRepo.AddAsync(new Models.TowTravel {
+            await _towTravelRepo.AddAsync(new TowTravel {
                 Id = towTravelId,
                 TowRequestId = towRequest.Id,
                 DriverId = towRequest.DriverId,
