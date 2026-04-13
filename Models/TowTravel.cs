@@ -1,4 +1,6 @@
-﻿namespace MaisGuinchos.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace MaisGuinchos.Models
 {
     public class TowTravel : BaseEntity
     {
@@ -8,10 +10,13 @@
         public User Driver { get; set; }
         public Guid DriverId { get; set; }
 
+        [Required]
         public Decimal FinalPrice { get; set; }
 
+        [Required]
         public int EstimatedArrivalTime { get; set; }
 
+        [Required]
         public TowTravelStatus Status { get; set; }
 
         public DateTime? StartedAt { get; set; }
@@ -20,6 +25,7 @@
 
         public DateTime? CanceledAt { get; set; }
 
+        [MaxLength(500)]
         public string? CancellationReason { get; set; }
     }
 
