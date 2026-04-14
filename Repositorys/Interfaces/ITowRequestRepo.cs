@@ -14,5 +14,6 @@ namespace MaisGuinchos.Repositorys.Interfaces
         Task<TowRequest> UpdateAsync(TowRequest towRequest);
 
         Task<bool> HasActiveRequestAsync(Guid clientId, Guid driverId);
+        Task<TowRequest?> GetByIdIncludeLocations(Guid idTowRequest);
     }
 }

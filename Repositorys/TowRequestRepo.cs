@@ -31,6 +31,14 @@ namespace MaisGuinchos.Repositorys
                 .Include(x => x.Driver).FirstOrDefaultAsync(tr => tr.Id == id);
         }
 
+        public async Task<TowRequest?> GetByIdIncludeLocations(Guid idTowRequest)
+        {
+            return await _appDbContext.TowRequests
+                .Include(x => x.Client)
+                .Include(x => x.Driver)
+                .ThenInclude(x => x.Locations).FirstOrDefaultAsync(tr => tr.Id == idTowRequest);
+        }
+
         public async Task SaveChangesAsync()
         {
             await _appDbContext.SaveChangesAsync();

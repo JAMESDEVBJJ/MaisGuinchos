@@ -68,7 +68,7 @@ namespace MaisGuinchos.Controllers
                 return BadRequest("Destino não encontrado");
 
             if (!double.TryParse(destino.lat, NumberStyles.Any, CultureInfo.InvariantCulture, out double destLat) ||
-     !double.TryParse(destino.lon, NumberStyles.Any, CultureInfo.InvariantCulture, out double destLon))
+                !double.TryParse(destino.lon, NumberStyles.Any, CultureInfo.InvariantCulture, out double destLon))
             {
                 return BadRequest("Coordenadas inválidas");
             }

@@ -228,7 +228,7 @@ namespace MaisGuinchos.Services
             };
         }
 
-        public async Task<AcceptTowRequestResponseDto> AcceptTowRequest(Guid idTowRequest)
+        public async Task<AcceptTowRequestResponseDTO> AcceptTowRequest(Guid idTowRequest)
         {
             var towRequest = await _towRequestRepo.GetByIdAsync(idTowRequest);
 
@@ -259,15 +259,28 @@ namespace MaisGuinchos.Services
                 CreatedAt = DateTime.UtcNow
             };
 
+            var driverLocation = towRequest.Driver.Locations?.FirstOrDefault();
+
+            if (driverLocation == null)
+            {
+                throw new BadRequestException("Localização do motorista não encontrada");
+            }
+
             await _towTravelRepo.AddAsync(towTravel);
 
             await _towRequestRepo.UpdateAsync(towRequest);
 
-            var response = new AcceptTowRequestResponseDto
+            var response = new AcceptTowRequestResponseDTO
             {
                 TowRequestId = towRequest.Id,
                 TowTravelId = towTravelId,
-                TowRequestStatus = towRequest.Status
+                TowRequestStatus = towRequest.Status,
+                DriverLat = driverLocation.Latitude,
+                DriverLon = driverLocation.Longitude,
+                PickupLat = towRequest.PickupLat,
+                PickupLon = towRequest.PickupLon,
+                DestinationLat = towRequest.DropoffLat,
+                DestinationLon = towRequest.DropoffLon
             };
 
             await _hubContext.Clients.User(towRequest.ClientId.ToString()).SendAsync("TowRequestAccepted", response);
@@ -275,9 +288,9 @@ namespace MaisGuinchos.Services
             return response;
         }
 
-        public async Task<AcceptTowRequestResponseDto> AcceptCounterOffer(Guid idTowRequest)
+        public async Task<AcceptTowRequestResponseDTO> AcceptCounterOffer(Guid idTowRequest)
         {
-            var towRequest = _towRequestRepo.GetByIdAsync(idTowRequest).Result;
+            var towRequest = _towRequestRepo.GetByIdIncludeLocations(idTowRequest).Result;
 
             if (towRequest == null)
             {
@@ -291,6 +304,14 @@ namespace MaisGuinchos.Services
 
             towRequest.UpdatedAt = DateTime.UtcNow;
             towRequest.Status = TowRequestStatus.Accepted;
+
+            
+            var driverLocation = towRequest.Driver.Locations?.FirstOrDefault();
+
+            if (driverLocation == null)
+            {
+                throw new BadRequestException("Localização do motorista não encontrada");
+            }
 
             await _towRequestRepo.UpdateAsync(towRequest);
 
@@ -306,10 +327,17 @@ namespace MaisGuinchos.Services
                 CreatedAt = DateTime.UtcNow
             });
 
-            var response = new AcceptTowRequestResponseDto {
+            var response = new AcceptTowRequestResponseDTO
+            {
                 TowRequestId = towRequest.Id,
                 TowTravelId = towTravelId,
-                TowRequestStatus = towRequest.Status
+                TowRequestStatus = towRequest.Status,
+                DriverLat = driverLocation.Latitude,
+                DriverLon = driverLocation.Longitude,
+                PickupLat = towRequest.PickupLat,
+                PickupLon = towRequest.PickupLon,
+                DestinationLat = towRequest.DropoffLat,
+                DestinationLon = towRequest.DropoffLon
             };
 
             await _hubContext.Clients.User(towRequest.DriverId.ToString()).SendAsync("CounterOfferAccepted", response);
