@@ -84,7 +84,12 @@ namespace MaisGuinchos.Controllers
                 destLat = routeDto.DestinationLat.Value;
                 destLon = routeDto.DestinationLon.Value;
             }
-      
+
+            if (destLat < -90 || destLat > 90 || destLon < -180 || destLon > 180)
+            {
+                return BadRequest("Coordenadas fora do intervalo válido");
+            }
+
             var route = await _mapsService.GetRoute(
                 routeDto.OriginLat,
                 routeDto.OriginLon,
