@@ -43,36 +43,48 @@ namespace MaisGuinchos.Controllers
         [HttpPost("route/calculate")]
         public async Task<IActionResult> CalculateRoute([FromBody] CalculateRouteDTO routeDto)
         {
-            if (string.IsNullOrEmpty(routeDto.Destination))
-                return BadRequest("Destino inválido");
-
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var destinationAddress = new AddressDTO
+            double destLon = 0;
+            double destLat = 0;
+
+            if (routeDto.Destination != null)
             {
-                address = routeDto.Destination,
-                id = null
-            };
+                var destinationAddress = new AddressDTO
+                {
+                    address = routeDto.Destination,
+                    id = null
+                };
 
-            var destinoCords = await _mapsService.GetCordsFromAddress(destinationAddress);
+                var destinoCords = await _mapsService.GetCordsFromAddress(destinationAddress);
 
-            if (destinoCords == null)
-                return BadRequest("Não foi possível encontrar o destino");
+                if (destinoCords == null)
+                    return BadRequest("Não foi possível encontrar o destino");
 
-            var destino = destinoCords.FirstOrDefault();
 
-            if (destino == null)
-                return BadRequest("Destino não encontrado");
+                var destino = destinoCords.FirstOrDefault();
 
-            if (!double.TryParse(destino.lat, NumberStyles.Any, CultureInfo.InvariantCulture, out double destLat) ||
-                !double.TryParse(destino.lon, NumberStyles.Any, CultureInfo.InvariantCulture, out double destLon))
-            {
-                return BadRequest("Coordenadas inválidas");
+                if (destino == null)
+                    return BadRequest("Destino não encontrado");
+
+                if (!double.TryParse(destino.lat, NumberStyles.Any, CultureInfo.InvariantCulture, out destLat) ||
+                    !double.TryParse(destino.lon, NumberStyles.Any, CultureInfo.InvariantCulture, out destLon))
+                {
+                    return BadRequest("Coordenadas inválidas");
+                }
             }
+            else
+            {
+                if (!routeDto.DestinationLat.HasValue || !routeDto.DestinationLon.HasValue)
+                    return BadRequest("Coordenadas inválidas");
 
+                destLat = routeDto.DestinationLat.Value;
+                destLon = routeDto.DestinationLon.Value;
+            }
+      
             var route = await _mapsService.GetRoute(
                 routeDto.OriginLat,
                 routeDto.OriginLon,

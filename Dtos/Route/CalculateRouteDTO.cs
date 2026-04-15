@@ -12,6 +12,10 @@ namespace MaisGuinchos.Dtos.Route
 
         public string? Destination { get; set; }
 
+        public double? DestinationLat { get; set; }
+
+        public double? DestinationLon { get; set; }
+
         public double? DriverLat { get; set; }
         public double? DriverLon { get; set; }
     }

@@ -1,6 +1,7 @@
 ﻿using MaisGuinchos.Models;
 using MaisGuinchos.Repositorys.Interfaces;
 using MaisGuinchos.Dtos;
+using Microsoft.EntityFrameworkCore;
 
 namespace MaisGuinchos.Repositorys
 {
@@ -33,9 +34,9 @@ namespace MaisGuinchos.Repositorys
 
         public async Task<Location?> GetLastFromUser(Guid userId)
         {
-            var location = _dbContext.Locations.Where(l => l.UserId == userId)
+            var location = await _dbContext.Locations.Where(l => l.UserId == userId)
                 .OrderByDescending(l => l.Id)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             return location;
         }

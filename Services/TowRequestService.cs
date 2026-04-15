@@ -13,16 +13,21 @@ namespace MaisGuinchos.Services
     public class TowRequestService : ITowRequestService
     {
         private readonly ITowRequestRepo _towRequestRepo;
+        private readonly IMapsService _locationService;
         private readonly ITowTravelRepo _towTravelRepo;
         private readonly IHubContext<TowHub> _hubContext;
         private readonly IUserService _userService;
 
-        public TowRequestService(ITowRequestRepo towRequestRepo, IHubContext<TowHub> hubContext, IUserService userService, ITowTravelRepo towTravelRepo)
+        public TowRequestService(ITowRequestRepo towRequestRepo,
+            IHubContext<TowHub> hubContext, IUserService userService,
+            ITowTravelRepo towTravelRepo,
+            IMapsService locationService)
         {
             _towRequestRepo = towRequestRepo;
             _hubContext = hubContext;
             _userService = userService;
             _towTravelRepo = towTravelRepo;
+            _locationService = locationService;
         }
 
         public async Task<Guid> CreateAsync(Guid clientId, CreateTowRequestDto dto)
@@ -259,7 +264,7 @@ namespace MaisGuinchos.Services
                 CreatedAt = DateTime.UtcNow
             };
 
-            var driverLocation = towRequest.Driver.Locations?.FirstOrDefault();
+            var driverLocation = await _locationService.GetLastLocationAsync(towRequest.DriverId);
 
             if (driverLocation == null)
             {
@@ -290,7 +295,7 @@ namespace MaisGuinchos.Services
 
         public async Task<AcceptTowRequestResponseDTO> AcceptCounterOffer(Guid idTowRequest)
         {
-            var towRequest = _towRequestRepo.GetByIdIncludeLocations(idTowRequest).Result;
+            var towRequest = _towRequestRepo.GetByIdAsync(idTowRequest).Result; //filtra só ultima
 
             if (towRequest == null)
             {
@@ -305,8 +310,8 @@ namespace MaisGuinchos.Services
             towRequest.UpdatedAt = DateTime.UtcNow;
             towRequest.Status = TowRequestStatus.Accepted;
 
-            
-            var driverLocation = towRequest.Driver.Locations?.FirstOrDefault();
+            var driverLocation = await _locationService.GetLastLocationAsync(towRequest.DriverId);
+
 
             if (driverLocation == null)
             {
