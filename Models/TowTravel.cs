@@ -31,9 +31,10 @@ namespace MaisGuinchos.Models
 
     public enum TowTravelStatus
     {
-        Accepted = 0,
-        InProgress = 1,
-        Completed = 2,
-        Canceled = 3
-    } // implementar mais status de viagem, para mais controle de fluxo e histórico tipo arrivedPickup
+        GoingToClient = 0,
+        Arrived = 1,
+        InProgress = 2,
+        Finished = 3,
+        Cancelled = 4
+    }
 }
