@@ -260,7 +260,7 @@ namespace MaisGuinchos.Services
                 DriverId = towRequest.DriverId,
                 FinalPrice = towRequest.FinalPrice ?? towRequest.SuggestedPrice,
                 EstimatedArrivalTime = towRequest.DurationMinutes,
-                Status = TowTravelStatus.Accepted,
+                Status = TowTravelStatus.GoingToClient,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -328,7 +328,7 @@ namespace MaisGuinchos.Services
                 DriverId = towRequest.DriverId,
                 FinalPrice = towRequest.CounterOfferPrice ?? towRequest.SuggestedPrice,
                 EstimatedArrivalTime = towRequest.DurationMinutes,
-                Status = TowTravelStatus.Accepted,
+                Status = TowTravelStatus.GoingToClient,
                 CreatedAt = DateTime.UtcNow
             });
 
