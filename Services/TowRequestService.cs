@@ -1,33 +1,42 @@
 ﻿using MaisGuinchos.Dtos.Tow;
 using MaisGuinchos.Exceptions;
 using MaisGuinchos.Hubs;
-using MaisGuinchos.Migrations;
 using MaisGuinchos.Models;
 using MaisGuinchos.Repositorys.Interfaces;
 using MaisGuinchos.Services.Interfaces;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using TowRequest = MaisGuinchos.Models.TowRequest;
 
 namespace MaisGuinchos.Services
 {
     public class TowRequestService : ITowRequestService
     {
         private readonly ITowRequestRepo _towRequestRepo;
+        private readonly IMapsService _locationService;
         private readonly ITowTravelRepo _towTravelRepo;
         private readonly IHubContext<TowHub> _hubContext;
         private readonly IUserService _userService;
 
-        public TowRequestService(ITowRequestRepo towRequestRepo, IHubContext<TowHub> hubContext, IUserService userService, ITowTravelRepo towTravelRepo)
+        public TowRequestService(ITowRequestRepo towRequestRepo,
+            IHubContext<TowHub> hubContext, IUserService userService,
+            ITowTravelRepo towTravelRepo,
+            IMapsService locationService)
         {
             _towRequestRepo = towRequestRepo;
             _hubContext = hubContext;
             _userService = userService;
             _towTravelRepo = towTravelRepo;
+            _locationService = locationService;
         }
 
         public async Task<Guid> CreateAsync(Guid clientId, CreateTowRequestDto dto)
         {
+            var exists = await _towRequestRepo.HasActiveRequestAsync(clientId, dto.DriverId);
+
+            if (exists)
+                throw new Exception("Já existe uma solicitação ativa para este motorista.");
+
             var request = new TowRequest
             {
                 Id = Guid.NewGuid(),
@@ -224,7 +233,7 @@ namespace MaisGuinchos.Services
             };
         }
 
-        public async Task<AcceptTowRequestResponseDto> AcceptTowRequest(Guid idTowRequest)
+        public async Task<AcceptTowRequestResponseDTO> AcceptTowRequest(Guid idTowRequest)
         {
             var towRequest = await _towRequestRepo.GetByIdAsync(idTowRequest);
 
@@ -233,7 +242,7 @@ namespace MaisGuinchos.Services
                 throw new NotFoundException("TowRequest não encontrada");
             }
 
-            if (towRequest.Status != TowRequestStatus.WaitingDriverResponse)
+            if (towRequest.Status != TowRequestStatus.WaitingDriverResponse && towRequest.Status != TowRequestStatus.CounterOfferRejected)
             {
                 throw new BadRequestException("Somente solicitações pendentes podem ser aceita pelo motorista.");
             }
@@ -251,19 +260,32 @@ namespace MaisGuinchos.Services
                 DriverId = towRequest.DriverId,
                 FinalPrice = towRequest.FinalPrice ?? towRequest.SuggestedPrice,
                 EstimatedArrivalTime = towRequest.DurationMinutes,
-                Status = TowTravelStatus.Accepted,
+                Status = TowTravelStatus.GoingToClient,
                 CreatedAt = DateTime.UtcNow
             };
+
+            var driverLocation = await _locationService.GetLastLocationAsync(towRequest.DriverId);
+
+            if (driverLocation == null)
+            {
+                throw new BadRequestException("Localização do motorista não encontrada");
+            }
 
             await _towTravelRepo.AddAsync(towTravel);
 
             await _towRequestRepo.UpdateAsync(towRequest);
 
-            var response = new AcceptTowRequestResponseDto
+            var response = new AcceptTowRequestResponseDTO
             {
                 TowRequestId = towRequest.Id,
                 TowTravelId = towTravelId,
-                TowRequestStatus = towRequest.Status
+                TowRequestStatus = towRequest.Status,
+                DriverLat = driverLocation.Latitude,
+                DriverLon = driverLocation.Longitude,
+                PickupLat = towRequest.PickupLat,
+                PickupLon = towRequest.PickupLon,
+                DestinationLat = towRequest.DropoffLat,
+                DestinationLon = towRequest.DropoffLon
             };
 
             await _hubContext.Clients.User(towRequest.ClientId.ToString()).SendAsync("TowRequestAccepted", response);
@@ -271,9 +293,9 @@ namespace MaisGuinchos.Services
             return response;
         }
 
-        public async Task<AcceptTowRequestResponseDto> AcceptCounterOffer(Guid idTowRequest)
+        public async Task<AcceptTowRequestResponseDTO> AcceptCounterOffer(Guid idTowRequest)
         {
-            var towRequest = _towRequestRepo.GetByIdAsync(idTowRequest).Result;
+            var towRequest = _towRequestRepo.GetByIdAsync(idTowRequest).Result; //filtra só ultima
 
             if (towRequest == null)
             {
@@ -288,24 +310,39 @@ namespace MaisGuinchos.Services
             towRequest.UpdatedAt = DateTime.UtcNow;
             towRequest.Status = TowRequestStatus.Accepted;
 
+            var driverLocation = await _locationService.GetLastLocationAsync(towRequest.DriverId);
+
+
+            if (driverLocation == null)
+            {
+                throw new BadRequestException("Localização do motorista não encontrada");
+            }
+
             await _towRequestRepo.UpdateAsync(towRequest);
 
             var towTravelId = Guid.NewGuid();
 
-            await _towTravelRepo.AddAsync(new Models.TowTravel {
+            await _towTravelRepo.AddAsync(new TowTravel {
                 Id = towTravelId,
                 TowRequestId = towRequest.Id,
                 DriverId = towRequest.DriverId,
                 FinalPrice = towRequest.CounterOfferPrice ?? towRequest.SuggestedPrice,
                 EstimatedArrivalTime = towRequest.DurationMinutes,
-                Status = TowTravelStatus.Accepted,
+                Status = TowTravelStatus.GoingToClient,
                 CreatedAt = DateTime.UtcNow
             });
 
-            var response = new AcceptTowRequestResponseDto {
+            var response = new AcceptTowRequestResponseDTO
+            {
                 TowRequestId = towRequest.Id,
                 TowTravelId = towTravelId,
-                TowRequestStatus = towRequest.Status
+                TowRequestStatus = towRequest.Status,
+                DriverLat = driverLocation.Latitude,
+                DriverLon = driverLocation.Longitude,
+                PickupLat = towRequest.PickupLat,
+                PickupLon = towRequest.PickupLon,
+                DestinationLat = towRequest.DropoffLat,
+                DestinationLon = towRequest.DropoffLon
             };
 
             await _hubContext.Clients.User(towRequest.DriverId.ToString()).SendAsync("CounterOfferAccepted", response);

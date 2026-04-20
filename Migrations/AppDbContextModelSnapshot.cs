@@ -193,7 +193,8 @@ namespace MaisGuinchos.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CancellationReason")
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");

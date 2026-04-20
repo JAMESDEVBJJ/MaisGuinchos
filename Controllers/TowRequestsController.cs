@@ -80,7 +80,7 @@ namespace MaisGuinchos.Controllers
             return Ok(result);
         }
 
-        [HttpPost("{id}/accept")]
+        [HttpPost("{id}/accept-tow")]
         [Authorize(Roles = "Motorista")]
         public async Task<IActionResult> AcceptTowRequest(Guid id)
         {
