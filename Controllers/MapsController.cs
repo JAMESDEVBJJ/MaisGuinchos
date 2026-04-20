@@ -101,7 +101,7 @@ namespace MaisGuinchos.Controllers
         [HttpPost("route/calculate/driver")]
         public async Task<IActionResult> CalculateRouteDriver([FromBody] CalculateRouteDTO routeDto)
         {
-            if (routeDto.DriverLat == null || routeDto.DriverLon == null)
+            if (routeDto.DestinationLat == null || routeDto.DestinationLon == null)
                 return BadRequest("Cordenadas do motorista inválidas.");
 
             if (!ModelState.IsValid)
@@ -112,8 +112,8 @@ namespace MaisGuinchos.Controllers
             var route = await _mapsService.GetRoute(
                 routeDto.OriginLat,
                 routeDto.OriginLon,
-                routeDto.DriverLat,
-                routeDto.DriverLon
+                routeDto.DestinationLat,
+                routeDto.DestinationLon
             );
 
             if (route == null)

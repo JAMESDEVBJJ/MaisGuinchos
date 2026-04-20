@@ -19,11 +19,5 @@ namespace MaisGuinchos.Dtos.Route
 
         [Range(-180, 180)]
         public double? DestinationLon { get; set; }
-
-        [Range(-90, 90)]
-        public double? DriverLat { get; set; }
-
-        [Range(-180, 180)]
-        public double? DriverLon { get; set; }
     }
 }
