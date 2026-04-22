@@ -1,15 +1,20 @@
 ﻿using MaisGuinchos.Dtos;
+using MaisGuinchos.Dtos.Route;
 using MaisGuinchos.Dtos.User;
 using MaisGuinchos.Exceptions;
+using MaisGuinchos.Hubs;
 using MaisGuinchos.Models;
 using MaisGuinchos.Repositorys;
 using MaisGuinchos.Repositorys.Interfaces;
 using MaisGuinchos.Services.Interfaces;
 using MaisGuinchos.utils;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.SignalR;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
+using System.Diagnostics;
 using System.Globalization;
+using System.Security.Claims;
 
 namespace MaisGuinchos.Services
 {
@@ -19,15 +24,24 @@ namespace MaisGuinchos.Services
         private readonly IMapsService _mapsService;
         private readonly ILocationRepo _locationRepo;
         private readonly IJwtService _jwtService;
+        private readonly ITravelService _travelService;
+        private readonly IHubContext<TowHub> _hubContext;
 
         private readonly PasswordHasher _hasherUtil = new PasswordHasher();
 
-        public UserService(IUserRepo userRepo, IMapsService mapsService, ILocationRepo locationRepo, IJwtService jwtService)
+        public UserService(IUserRepo userRepo,
+            IMapsService mapsService,
+            ILocationRepo locationRepo,
+            IJwtService jwtService,
+            ITravelService travelService,
+            IHubContext<TowHub> hubContext)
         {
             _userRepo = userRepo;
             _mapsService = mapsService;
             _locationRepo = locationRepo;
             _jwtService = jwtService;
+            _hubContext = hubContext;
+            _travelService = travelService;
         }
 
         public List<User> GetAllUsers()
@@ -223,7 +237,7 @@ namespace MaisGuinchos.Services
             return await _userRepo.GetUserById(id);
         }
 
-        public async Task<UpdLocationResponseDTO> UpdateLocation(Guid id, AddressDTO address)
+        public async Task<UpdLocationResponseDTO> UpdateLocation(Guid id, AddressDTO address, ClaimsPrincipal userClaims)
         {
             var user = await _userRepo.GetUserById(id);
 
@@ -239,7 +253,7 @@ namespace MaisGuinchos.Services
                 throw new BadRequestException("Address not exists");
             }
 
-            var userLocation = new CreateLocationDTO
+            var userLocationAdd = new CreateLocationDTO
             {
                 lat = double.TryParse(
                     geoLocation?[0].lat,
@@ -256,21 +270,80 @@ namespace MaisGuinchos.Services
                 display_name = geoLocation != null & geoLocation?.Count > 0 ? geoLocation?[0].display_name : "",
             };
 
-            var locationAdd = await _locationRepo.UpdateLocation(id, userLocation);
+            var locationAdded = await _locationRepo.UpdateLocation(id, userLocationAdd);
 
             var locationReturn = new UpdLocationResponseDTO
             {
-                Lat = locationAdd.Latitude,
-                Lon = locationAdd.Longitude,
-                DisplayName = locationAdd.DisplayName,
+                Lat = locationAdded.Latitude,
+                Lon = locationAdded.Longitude,
+                DisplayName = locationAdded.DisplayName,
                 User = new UserSummaryDTO
                 {
                     Id = id,
-                    UserName = locationAdd.User.UserName
+                    UserName = locationAdded.User.UserName
                 }
             };
 
+            var role = userClaims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+
+            if (role == "Motorista")
+            {
+                await HandleDriverLocationUpdate(id, locationAdded);
+            }
+
             return locationReturn;
+        }
+
+        private async Task HandleDriverLocationUpdate(Guid driverId, Location updatedLocation)
+        {
+            if (updatedLocation?.Latitude == null || updatedLocation?.Longitude == null)
+                return;
+
+            var travel = await _travelService.GetActiveByDriverId(driverId);
+
+            if (travel == null)
+                return;
+
+            var target = _travelService.ResolveTarget(travel);
+
+            var route = await _mapsService.GetRoute(
+                updatedLocation.Latitude,
+                updatedLocation.Longitude,
+                target.Lat,
+                target.Lon
+            );
+
+            if (route == null)
+                return;
+
+            var realtime = new RouteRealtimeDTO
+            {
+                Type = travel.Status == TowTravelStatus.GoingToClient ?
+                RouteType.DriverToPickup : RouteType.DriverToDestination,
+                Origin = new CoordinateDto
+                {
+                    Lat = updatedLocation.Latitude,
+                    Lon = updatedLocation.Longitude
+                },
+                Destination = new CoordinateDto
+                {
+                    Lat = target.Lat,
+                    Lon = target.Lon
+                },
+                Polyline = route.Polyline,
+                DistanceKm = route.DistanceKm//falta preço e minutes
+            };
+
+            await SendRouteUpdate(travel, realtime);
+        }
+
+        private async Task SendRouteUpdate(TowTravel travel, RouteRealtimeDTO route)
+        {
+            await _hubContext.Clients.User(travel.DriverId.ToString())
+                .SendAsync("driverLocationUpdated", route);
+
+            await _hubContext.Clients.User(travel.TowRequest.ClientId.ToString())
+                .SendAsync("driverLocationUpdated", route);
         }
 
         public async Task<List<MotoristaProxDTO?>> BuscarMotoristasProximos(string userId, int? limit = null)

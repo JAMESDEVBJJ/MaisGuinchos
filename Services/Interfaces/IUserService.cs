@@ -1,6 +1,7 @@
 ﻿using MaisGuinchos.Dtos;
 using MaisGuinchos.Dtos.User;
 using MaisGuinchos.Models;
+using System.Security.Claims;
 
 namespace MaisGuinchos.Services.Interfaces
 {
@@ -16,7 +17,7 @@ namespace MaisGuinchos.Services.Interfaces
 
         public Task<User> UpdateUser(UpdUserDto userUpd, Guid id);
 
-        public Task<UpdLocationResponseDTO> UpdateLocation(Guid id, AddressDTO address);
+        public Task<UpdLocationResponseDTO> UpdateLocation(Guid id, AddressDTO address, ClaimsPrincipal userClaims);
 
         public Task<List<MotoristaProxDTO?>> BuscarMotoristasProximos(string userId, int? limit = null);
     }
