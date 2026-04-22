@@ -16,7 +16,7 @@ namespace MaisGuinchos.Services
 
         public Task<TowTravel?> GetActiveByDriverId(Guid driverId)
         {
-            return _towTravelRepo.GetActiveByDriverId(driverId);
+            return _towTravelRepo.GetLastActiveByDriverId(driverId);
         }
 
         public Task<TowTravel?> GetActiveByClientId(Guid clientId)

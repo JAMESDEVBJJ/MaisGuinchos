@@ -340,10 +340,10 @@ namespace MaisGuinchos.Services
         private async Task SendRouteUpdate(TowTravel travel, RouteRealtimeDTO route)
         {
             await _hubContext.Clients.User(travel.DriverId.ToString())
-                .SendAsync("driverLocationUpdated", route);
+                .SendAsync("DriverLocationUpdated", route);
 
             await _hubContext.Clients.User(travel.TowRequest.ClientId.ToString())
-                .SendAsync("driverLocationUpdated", route);
+                .SendAsync("DriverLocationUpdated", route);
         }
 
         public async Task<List<MotoristaProxDTO?>> BuscarMotoristasProximos(string userId, int? limit = null)
