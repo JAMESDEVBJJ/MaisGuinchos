@@ -129,6 +129,12 @@ namespace MaisGuinchos.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<double>("DistanceToDestinationKm")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("DistanceToPickupKm")
+                        .HasColumnType("double precision");
+
                     b.Property<Guid>("DriverId")
                         .HasColumnType("uuid");
 
@@ -137,6 +143,12 @@ namespace MaisGuinchos.Migrations
 
                     b.Property<double>("DropoffLon")
                         .HasColumnType("double precision");
+
+                    b.Property<int>("DurationMinToDestination")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DurationMinToPickup")
+                        .HasColumnType("integer");
 
                     b.Property<int>("DurationMinutes")
                         .HasColumnType("integer");
@@ -199,8 +211,20 @@ namespace MaisGuinchos.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<double>("DistanceToDestinationKm")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("DistanceToPickupKm")
+                        .HasColumnType("double precision");
+
                     b.Property<Guid>("DriverId")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("DurationMinToDestination")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DurationMinToPickup")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("EndedAt")
                         .HasColumnType("timestamp with time zone");
@@ -216,6 +240,9 @@ namespace MaisGuinchos.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
+
+                    b.Property<double>("TotalDistanceKm")
+                        .HasColumnType("double precision");
 
                     b.Property<Guid>("TowRequestId")
                         .HasColumnType("uuid");

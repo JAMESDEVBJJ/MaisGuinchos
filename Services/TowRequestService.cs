@@ -285,7 +285,11 @@ namespace MaisGuinchos.Services
                 PickupLat = towRequest.PickupLat,
                 PickupLon = towRequest.PickupLon,
                 DestinationLat = towRequest.DropoffLat,
-                DestinationLon = towRequest.DropoffLon
+                DestinationLon = towRequest.DropoffLon,
+                TowDriverId = towRequest.DriverId,
+                FinalPrice = towTravel.FinalPrice,
+                EstimatedArrivalTime = towTravel.EstimatedArrivalTime,
+                DistanceKm = towRequest.TotalDistanceKm
             };
 
             await _hubContext.Clients.User(towRequest.ClientId.ToString()).SendAsync("TowRequestAccepted", response);

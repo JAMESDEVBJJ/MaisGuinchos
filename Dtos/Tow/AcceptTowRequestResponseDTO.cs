@@ -10,6 +10,18 @@ namespace MaisGuinchos.Dtos.Tow
 
         [Required]
         public Guid TowTravelId { get; set; }
+        
+        [Required]
+        public Guid TowDriverId { get; set; }
+
+        [Required]
+        public decimal FinalPrice { get; set; }
+
+        [Required]
+        public int EstimatedArrivalTime { get; set; }
+
+        [Required]
+        public double DistanceKm { get; set; }
 
         [Required]
         public TowRequestStatus TowRequestStatus { get; set; }

@@ -331,7 +331,8 @@ namespace MaisGuinchos.Services
                     Lon = target.Lon
                 },
                 Polyline = route.Polyline,
-                DistanceKm = route.DistanceKm//falta preço e minutes
+                DistanceKm = route.DistanceKm,
+                DurationMinutes = route.DurationMinutes,
             };
 
             await SendRouteUpdate(travel, realtime);
