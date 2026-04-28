@@ -129,10 +129,10 @@ namespace MaisGuinchos.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<double>("DistanceToDestinationKm")
+                    b.Property<double?>("DistanceToDestinationKm")
                         .HasColumnType("double precision");
 
-                    b.Property<double>("DistanceToPickupKm")
+                    b.Property<double?>("DistanceToPickupKm")
                         .HasColumnType("double precision");
 
                     b.Property<Guid>("DriverId")
@@ -144,10 +144,10 @@ namespace MaisGuinchos.Migrations
                     b.Property<double>("DropoffLon")
                         .HasColumnType("double precision");
 
-                    b.Property<int>("DurationMinToDestination")
+                    b.Property<int?>("DurationMinToDestination")
                         .HasColumnType("integer");
 
-                    b.Property<int>("DurationMinToPickup")
+                    b.Property<int?>("DurationMinToPickup")
                         .HasColumnType("integer");
 
                     b.Property<int>("DurationMinutes")
@@ -211,19 +211,19 @@ namespace MaisGuinchos.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<double>("DistanceToDestinationKm")
+                    b.Property<double?>("DistanceToDestinationKm")
                         .HasColumnType("double precision");
 
-                    b.Property<double>("DistanceToPickupKm")
+                    b.Property<double?>("DistanceToPickupKm")
                         .HasColumnType("double precision");
 
                     b.Property<Guid>("DriverId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("DurationMinToDestination")
+                    b.Property<int?>("DurationMinToDestination")
                         .HasColumnType("integer");
 
-                    b.Property<int>("DurationMinToPickup")
+                    b.Property<int?>("DurationMinToPickup")
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("EndedAt")

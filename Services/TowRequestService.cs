@@ -1,6 +1,7 @@
 ﻿using MaisGuinchos.Dtos.Tow;
 using MaisGuinchos.Exceptions;
 using MaisGuinchos.Hubs;
+using MaisGuinchos.Migrations;
 using MaisGuinchos.Models;
 using MaisGuinchos.Repositorys.Interfaces;
 using MaisGuinchos.Services.Interfaces;
@@ -37,7 +38,7 @@ namespace MaisGuinchos.Services
             if (exists)
                 throw new Exception("Já existe uma solicitação ativa para este motorista.");
 
-            var request = new TowRequest
+            var request = new Models.TowRequest
             {
                 Id = Guid.NewGuid(),
                 ClientId = clientId,
@@ -47,7 +48,11 @@ namespace MaisGuinchos.Services
                 DropoffLat = dto.DropoffLat,
                 DropoffLon = dto.DropoffLon,
                 TotalDistanceKm = dto.TotalDistanceKm,
+                DistanceToDestinationKm = dto.DistanceToDestinationKm,
+                DistanceToPickupKm = dto.DistanceToPickupKm,
                 DurationMinutes = dto.DurationMinutes,
+                DurationMinToDestination = dto.DurationToDestinationMin,
+                DurationMinToPickup = dto.DurationToPickupMin,
                 SuggestedPrice = dto.SuggestedPrice,
                 VehicleType = dto.VehicleType,
                 VehicleIssue = dto.VehicleIssue,
@@ -83,7 +88,7 @@ namespace MaisGuinchos.Services
             return request.Id;
         }
 
-        public async Task<TowRequest> GetTowRequestById(Guid towRequestId)
+        public async Task<Models.TowRequest> GetTowRequestById(Guid towRequestId)
         {
             var request = await _towRequestRepo.GetByIdAsync(towRequestId);
             return request ?? throw new Exception("Tow request not found");
@@ -261,7 +266,12 @@ namespace MaisGuinchos.Services
                 FinalPrice = towRequest.FinalPrice ?? towRequest.SuggestedPrice,
                 EstimatedArrivalTime = towRequest.DurationMinutes,
                 Status = TowTravelStatus.GoingToClient,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                TotalDistanceKm = towRequest.TotalDistanceKm,
+                DurationMinToDestination = towRequest.DurationMinToDestination,
+                DurationMinToPickup = towRequest.DurationMinToPickup,
+                DistanceToDestinationKm = towRequest.DistanceToDestinationKm,
+                DistanceToPickupKm = towRequest.DistanceToPickupKm
             };
 
             var driverLocation = await _locationService.GetLastLocationAsync(towRequest.DriverId);
@@ -289,7 +299,10 @@ namespace MaisGuinchos.Services
                 TowDriverId = towRequest.DriverId,
                 FinalPrice = towTravel.FinalPrice,
                 EstimatedArrivalTime = towTravel.EstimatedArrivalTime,
-                DistanceKm = towRequest.TotalDistanceKm
+                DurationMinToPickup = towRequest.DurationMinToPickup.GetValueOrDefault(),
+                DurationMinToDestination = towRequest.DurationMinToDestination.GetValueOrDefault(),
+                DistanceToPickupKm = towRequest.DistanceToPickupKm.GetValueOrDefault(),
+                DistanceToDestinationKm = towRequest.DistanceToDestinationKm.GetValueOrDefault()
             };
 
             await _hubContext.Clients.User(towRequest.ClientId.ToString()).SendAsync("TowRequestAccepted", response);
@@ -299,7 +312,7 @@ namespace MaisGuinchos.Services
 
         public async Task<AcceptTowRequestResponseDTO> AcceptCounterOffer(Guid idTowRequest)
         {
-            var towRequest = _towRequestRepo.GetByIdAsync(idTowRequest).Result; //filtra só ultima
+            var towRequest = await _towRequestRepo.GetByIdAsync(idTowRequest);      
 
             if (towRequest == null)
             {
@@ -326,13 +339,18 @@ namespace MaisGuinchos.Services
 
             var towTravelId = Guid.NewGuid();
 
-            await _towTravelRepo.AddAsync(new TowTravel {
+            await _towTravelRepo.AddAsync(new Models.TowTravel {
                 Id = towTravelId,
                 TowRequestId = towRequest.Id,
                 DriverId = towRequest.DriverId,
                 FinalPrice = towRequest.CounterOfferPrice ?? towRequest.SuggestedPrice,
                 EstimatedArrivalTime = towRequest.DurationMinutes,
                 Status = TowTravelStatus.GoingToClient,
+                TotalDistanceKm = towRequest.TotalDistanceKm,
+                DurationMinToDestination = towRequest.DurationMinToDestination,
+                DurationMinToPickup = towRequest.DurationMinToPickup,
+                DistanceToDestinationKm = towRequest.DistanceToDestinationKm,
+                DistanceToPickupKm = towRequest.DistanceToPickupKm,
                 CreatedAt = DateTime.UtcNow
             });
 
@@ -346,7 +364,14 @@ namespace MaisGuinchos.Services
                 PickupLat = towRequest.PickupLat,
                 PickupLon = towRequest.PickupLon,
                 DestinationLat = towRequest.DropoffLat,
-                DestinationLon = towRequest.DropoffLon
+                DestinationLon = towRequest.DropoffLon,
+                DurationMinToPickup = towRequest.DurationMinToPickup.GetValueOrDefault(),
+                DurationMinToDestination = towRequest.DurationMinToDestination.GetValueOrDefault(),
+                DistanceToPickupKm = towRequest.DistanceToPickupKm.GetValueOrDefault(),
+                DistanceToDestinationKm = towRequest.DistanceToDestinationKm.GetValueOrDefault(),
+                FinalPrice = towRequest.CounterOfferPrice ?? towRequest.SuggestedPrice,
+                TowDriverId = towRequest.DriverId,
+                EstimatedArrivalTime = towRequest.DurationMinutes
             };
 
             await _hubContext.Clients.User(towRequest.DriverId.ToString()).SendAsync("CounterOfferAccepted", response);

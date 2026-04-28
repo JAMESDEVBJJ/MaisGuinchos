@@ -18,10 +18,28 @@ namespace MaisGuinchos.Dtos.Tow
         public decimal FinalPrice { get; set; }
 
         [Required]
+        [Range(0, double.MaxValue)]
+        public double TotalDistanceKm { get; set; }
+
+        [Required]
+        [Range(0, double.MaxValue)]
+        public double DistanceToPickupKm { get; set; }
+
+        [Required]
+        [Range(0, double.MaxValue)]
+        public double DistanceToDestinationKm { get; set; }
+
+        [Required]
+        [Range(0, int.MaxValue)]
         public int EstimatedArrivalTime { get; set; }
 
         [Required]
-        public double DistanceKm { get; set; }
+        [Range(0, int.MaxValue)]
+        public int DurationMinToPickup { get; set; }
+
+        [Required]
+        [Range(0, int.MaxValue)]
+        public int DurationMinToDestination { get; set; }
 
         [Required]
         public TowRequestStatus TowRequestStatus { get; set; }

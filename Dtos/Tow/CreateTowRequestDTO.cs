@@ -20,10 +20,22 @@ namespace MaisGuinchos.Dtos.Tow
         public double DropoffLon { get; set; }
 
         [Required]
+        public double DistanceToPickupKm { get; set; }
+
+        [Required]
+        public double DistanceToDestinationKm { get; set; }
+
+        [Required]
         public double TotalDistanceKm { get; set; }
 
         [Required]
         public int DurationMinutes { get; set; }
+
+        [Required]
+        public int DurationToPickupMin { get; set; }
+
+        [Required]
+        public int DurationToDestinationMin { get; set; }
 
         [Required]
         public decimal SuggestedPrice { get; set; }
