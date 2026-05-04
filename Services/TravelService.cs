@@ -30,6 +30,9 @@ namespace MaisGuinchos.Services
 
         public CoordinateDto ResolveTarget(TowTravel travel)
         {
+            if (travel == null)
+                throw new ArgumentNullException(nameof(travel));
+
             if (travel.Status == TowTravelStatus.GoingToClient)
             {
                 return new CoordinateDto
@@ -63,6 +66,8 @@ namespace MaisGuinchos.Services
 
         public async Task<TowTravelResponseDTO?> ToDto(TowTravel entity)
         {
+            if (entity == null)
+                return null;
 
             var lastDriverLoc = await _mapsService.GetLastLocationAsync(entity.DriverId);
 
@@ -76,10 +81,14 @@ namespace MaisGuinchos.Services
                 Id = entity.Id,
 
                 DriverId = entity.DriverId,
-                DriverName = entity.Driver.Name,
+                DriverName = entity.Driver.Name ?? string.Empty,
 
                 ClientId = entity.TowRequest.ClientId,
-                ClientName = entity.TowRequest.Client.Name,
+                ClientName = entity.TowRequest.Client.Name ?? string.Empty,
+                ClientPhone = entity.TowRequest.Client.NumeroTelefone ?? string.Empty,
+                VehicleModel = entity.TowRequest.VehicleType ?? string.Empty,
+                Notes = entity.TowRequest.Notes ?? string.Empty,
+                Questions = entity.TowRequest.VehicleIssue ?? string.Empty,
 
                 TowRequestId = entity.TowRequestId,
 
@@ -96,20 +105,20 @@ namespace MaisGuinchos.Services
                 StartedAt = entity.StartedAt,
                 EndedAt = entity.EndedAt,
                 CanceledAt = entity.CanceledAt,
-                CancellationReason = entity.CancellationReason,
+                CancellationReason = entity.CancellationReason ?? string.Empty,
 
                 Origin = new LocationDTO
                 {
                     Latitude = lastDriverLoc.Latitude,
                     Longitude = lastDriverLoc.Longitude,
-                    Address = lastDriverLoc.DisplayName
+                    Address = lastDriverLoc.DisplayName ?? string.Empty
                 },
 
                 Destination = new LocationDTO
                 {
                     Latitude = entity.TowRequest.DropoffLat,
                     Longitude = entity.TowRequest.DropoffLon,
-                    Address = null
+                    Address = string.Empty
                 }
             };
         }
