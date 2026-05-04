@@ -14,7 +14,7 @@ namespace MaisGuinchos.Repositorys
         public async Task AddAsync(TowTravel towTravel)
         {
             await _appDbContext.TowTravels.AddAsync(towTravel);
-            await _appDbContext.SaveChangesAsync(); 
+            await _appDbContext.SaveChangesAsync();
         }
 
         public async Task<TowTravel?> GetLastActiveByDriverId(Guid driverId)
@@ -32,6 +32,18 @@ namespace MaisGuinchos.Repositorys
                 .FirstOrDefaultAsync(t => t.TowRequest.ClientId == clientId &&
                 (t.Status != TowTravelStatus.Finished &&
                 t.Status != TowTravelStatus.Cancelled));
+        }
+
+        public async Task<TowTravel?> GetPendingByUserId(Guid userId)
+        {
+            return await _appDbContext.TowTravels.
+                Where(t => (t.DriverId == userId || t.TowRequest.ClientId == userId) &&
+                (t.Status == TowTravelStatus.GoingToClient ||
+                t.Status == TowTravelStatus.InProgress ||
+                t.Status == TowTravelStatus.Arrived))
+                .Include(t => t.Driver)
+                .Include(t => t.TowRequest).ThenInclude(tr => tr.Client)
+                .OrderByDescending(t => t.CreatedAt).FirstOrDefaultAsync();
         }
     }
 }
