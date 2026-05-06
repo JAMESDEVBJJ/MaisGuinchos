@@ -143,5 +143,24 @@ namespace MaisGuinchos.Controllers
 
             return Ok(lastLocation);
         }
+
+        [Authorize(Roles = "Motorista,Cliente")]
+        [HttpGet("last-location/{userId}")]
+        public async Task<IActionResult> GetLastLocationById(Guid userId)
+        {
+            var sub = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst("sub")?.Value;
+
+            if (string.IsNullOrEmpty(sub)) return Unauthorized();
+
+            var lastLocation = await _mapsService.GetLastLocationAsync(userId);
+
+            if (lastLocation == null)
+            {
+                return NotFound("Nenhuma localização encontrada para o usuário.");
+            }
+
+            return Ok(lastLocation);
+        }
     }
 }

@@ -49,7 +49,7 @@ namespace MaisGuinchos.Models
     public enum TowTravelStatus
     {
         GoingToClient = 0,
-        Arrived = 1,
+        ArrivedAtPickup = 1,
         InProgress = 2,
         Finished = 3,
         Cancelled = 4

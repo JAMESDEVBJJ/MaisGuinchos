@@ -82,11 +82,16 @@ namespace MaisGuinchos.Services
 
                 DriverId = entity.DriverId,
                 DriverName = entity.Driver.Name ?? string.Empty,
+                DriverPhone = entity.Driver.NumeroTelefone ?? string.Empty,
+                VehicleModelDriver = entity.Driver.Guincho!.Modelo ?? string.Empty,
+                VehicleColorDriver = entity.Driver.Guincho!.Cor ?? string.Empty,
+                PlacaDriver = entity.Driver.Guincho!.Placa ?? string.Empty,
+
 
                 ClientId = entity.TowRequest.ClientId,
                 ClientName = entity.TowRequest.Client.Name ?? string.Empty,
                 ClientPhone = entity.TowRequest.Client.NumeroTelefone ?? string.Empty,
-                VehicleModel = entity.TowRequest.VehicleType ?? string.Empty,
+                VehicleModelClient = entity.TowRequest.VehicleType ?? string.Empty,
                 Notes = entity.TowRequest.Notes ?? string.Empty,
                 Questions = entity.TowRequest.VehicleIssue ?? string.Empty,
 
@@ -112,6 +117,13 @@ namespace MaisGuinchos.Services
                     Latitude = lastDriverLoc.Latitude,
                     Longitude = lastDriverLoc.Longitude,
                     Address = lastDriverLoc.DisplayName ?? string.Empty
+                },
+
+                Pickup = new LocationDTO
+                {
+                    Latitude = entity.TowRequest.PickupLat,
+                    Longitude = entity.TowRequest.PickupLon,
+                    Address = string.Empty
                 },
 
                 Destination = new LocationDTO

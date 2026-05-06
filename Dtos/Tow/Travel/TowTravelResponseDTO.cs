@@ -8,11 +8,16 @@ namespace MaisGuinchos.Dtos.Tow.Travel
 
         public Guid DriverId { get; set; }
         public string DriverName { get; set; }
+        public string VehicleModelDriver { get; set; }
+        public string VehicleColorDriver { get; set; }
+        public string DriverPhone { get; set; }
+
+        public string PlacaDriver { get; set; }
 
         public Guid ClientId { get; set; }
         public string ClientName { get; set; }
         public string ClientPhone { get; set; }
-        public string VehicleModel { get; set; }
+        public string VehicleModelClient { get; set; }
         public string Notes { get; set; }
 
         public string Questions { get; set; }
@@ -35,6 +40,9 @@ namespace MaisGuinchos.Dtos.Tow.Travel
         public string? CancellationReason { get; set; }
 
         public LocationDTO Origin { get; set; }
+
+        public LocationDTO Pickup { get; set; }
+
         public LocationDTO Destination { get; set; }
     }
 }
