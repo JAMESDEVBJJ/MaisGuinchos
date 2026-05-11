@@ -25,21 +25,25 @@ namespace MaisGuinchos.Services
         private readonly ILocationRepo _locationRepo;
         private readonly IJwtService _jwtService;
         private readonly ITravelService _travelService;
+        private readonly ITowTravelRepo _towTravelRepo;
         private readonly IHubContext<TowHub> _hubContext;
 
         private readonly PasswordHasher _hasherUtil = new PasswordHasher();
+
+        private const double DISTANCE_TO_ARRIVED_METERS = 150;
 
         public UserService(IUserRepo userRepo,
             IMapsService mapsService,
             ILocationRepo locationRepo,
             IJwtService jwtService,
             ITravelService travelService,
-            IHubContext<TowHub> hubContext)
+            IHubContext<TowHub> hubContext, ITowTravelRepo towTravelRepo)
         {
             _userRepo = userRepo;
             _mapsService = mapsService;
             _locationRepo = locationRepo;
             _jwtService = jwtService;
+            _towTravelRepo = towTravelRepo;
             _hubContext = hubContext;
             _travelService = travelService;
         }
@@ -301,16 +305,18 @@ namespace MaisGuinchos.Services
 
             var travel = await _travelService.GetActiveByDriverId(driverId);
 
-            if (travel == null)
+            if (travel == null || travel.Status == TowTravelStatus.ArrivedAtPickup)
                 return;
+
+            //nn precisa re traçar nem manda em tempo real nem mostra se tiver guinchando (ou cancelado ou finalizado tmb ne mas vm vendo ne guri)
 
             var target = _travelService.ResolveTarget(travel);
 
             var route = await _mapsService.GetRoute(
                 updatedLocation.Latitude,
                 updatedLocation.Longitude,
-                target.Lat,
-                target.Lon
+                target!.Lat,
+                target!.Lon
             );
 
             if (route == null)
@@ -336,6 +342,17 @@ namespace MaisGuinchos.Services
             };
 
             await SendRouteUpdate(travel, realtime);
+
+            if (travel.Status == TowTravelStatus.GoingToClient)
+            {
+               var distanceToPickupM = GeoHelper.CalcularDistanciaKm(updatedLocation.Latitude, updatedLocation.Longitude,
+                   target.Lat, target.Lon) * 1000;
+                if (distanceToPickupM <= DISTANCE_TO_ARRIVED_METERS)
+                {
+                    travel.Status = TowTravelStatus.ArrivedAtPickup;
+                    await _towTravelRepo.SaveChangesAsync();
+                }
+            }
         }
 
         private async Task SendRouteUpdate(TowTravel travel, RouteRealtimeDTO route)

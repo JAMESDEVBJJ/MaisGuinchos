@@ -11,5 +11,7 @@ namespace MaisGuinchos.Repositorys.Interfaces
         Task<TowTravel?> GetActiveByClientId(Guid clientId);
 
         Task<TowTravel?> GetPendingByUserId(Guid userId);
+
+        Task SaveChangesAsync();
     }
 }

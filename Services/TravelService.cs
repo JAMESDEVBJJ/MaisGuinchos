@@ -28,30 +28,26 @@ namespace MaisGuinchos.Services
             return _towTravelRepo.GetActiveByClientId(clientId);
         }
 
-        public CoordinateDto ResolveTarget(TowTravel travel)
+        public CoordinateDto? ResolveTarget(TowTravel travel)
         {
-            if (travel == null)
-                throw new ArgumentNullException(nameof(travel));
-
-            if (travel.Status == TowTravelStatus.GoingToClient)
+            return travel.Status switch
             {
-                return new CoordinateDto
+                TowTravelStatus.GoingToClient => new CoordinateDto
                 {
                     Lat = travel.TowRequest.PickupLat,
                     Lon = travel.TowRequest.PickupLon
-                };
-            }
+                },
 
-            if (travel.Status == TowTravelStatus.InProgress)
-            {
-                return new CoordinateDto
+                TowTravelStatus.InProgress => new CoordinateDto
                 {
                     Lat = travel.TowRequest.DropoffLat,
                     Lon = travel.TowRequest.DropoffLon
-                };
-            }
+                },
 
-            throw new Exception("Estágio da viagem inválido.");
+                _ => null
+            };
+
+            throw new Exception("Estágio da viagem inválido para decidir o alvo da rota.");
         }
 
         public async Task<TowTravelResponseDTO?> GetPendingTowTravel(Guid userId)
@@ -62,6 +58,7 @@ namespace MaisGuinchos.Services
                 return null;
 
             return await ToDto(towTravel);
+        
         }
 
         public async Task<TowTravelResponseDTO?> ToDto(TowTravel entity)

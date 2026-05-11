@@ -11,6 +11,12 @@ namespace MaisGuinchos.Repositorys
         {
             _appDbContext = appDbContext;
         }
+
+        public async Task SaveChangesAsync()
+        {
+            await _appDbContext.SaveChangesAsync();
+        }
+
         public async Task AddAsync(TowTravel towTravel)
         {
             await _appDbContext.TowTravels.AddAsync(towTravel);
