@@ -1,5 +1,6 @@
 ﻿using MaisGuinchos.Models;
 using MaisGuinchos.Repositorys.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace MaisGuinchos.Repositorys
 {
@@ -10,10 +11,45 @@ namespace MaisGuinchos.Repositorys
         {
             _appDbContext = appDbContext;
         }
+
+        public async Task SaveChangesAsync()
+        {
+            await _appDbContext.SaveChangesAsync();
+        }
+
         public async Task AddAsync(TowTravel towTravel)
         {
             await _appDbContext.TowTravels.AddAsync(towTravel);
-            await _appDbContext.SaveChangesAsync(); 
+            await _appDbContext.SaveChangesAsync();
+        }
+
+        public async Task<TowTravel?> GetLastActiveByDriverId(Guid driverId)
+        {
+            return await _appDbContext.TowTravels
+                .Include(t => t.TowRequest).OrderByDescending(t => t.CreatedAt)
+                .FirstOrDefaultAsync(t => t.DriverId == driverId &&
+                (t.Status != TowTravelStatus.Finished &&
+                t.Status != TowTravelStatus.Cancelled));
+        }
+
+        public async Task<TowTravel?> GetActiveByClientId(Guid clientId)
+        {
+            return await _appDbContext.TowTravels
+                .FirstOrDefaultAsync(t => t.TowRequest.ClientId == clientId &&
+                (t.Status != TowTravelStatus.Finished &&
+                t.Status != TowTravelStatus.Cancelled));
+        }
+
+        public async Task<TowTravel?> GetPendingByUserId(Guid userId)
+        {
+            return await _appDbContext.TowTravels.
+                Where(t => (t.DriverId == userId || t.TowRequest.ClientId == userId) &&
+                (t.Status == TowTravelStatus.GoingToClient ||
+                t.Status == TowTravelStatus.InProgress ||
+                t.Status == TowTravelStatus.ArrivedAtPickup))
+                .Include(t => t.Driver).ThenInclude(d => d.Guincho)
+                .Include(t => t.TowRequest).ThenInclude(tr => tr.Client)
+                .OrderByDescending(t => t.CreatedAt).FirstOrDefaultAsync();
         }
     }
 }

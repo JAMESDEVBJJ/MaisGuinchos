@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Routing.Constraints;
 using Npgsql.Replication.PgOutput.Messages;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using MaisGuinchos.Dtos.Route;
 
 
 namespace MaisGuinchos.Controllers
@@ -18,9 +19,13 @@ namespace MaisGuinchos.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        public UserController(IUserService userService)
+        private readonly ITravelService _travelService;
+        private readonly IMapsService _mapsService;
+        public UserController(IUserService userService, ITravelService travelService, IMapsService mapsService)
         {
             _userService = userService;
+            _travelService = travelService;
+            _mapsService = mapsService;
         }
 
         [HttpGet("all")]
@@ -105,7 +110,7 @@ namespace MaisGuinchos.Controllers
         [Authorize(Roles = "Cliente,Motorista")]
         public async Task<IActionResult> UpdateLocation([FromBody] AddressDTO address)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);    
 
             if (userId == null)
             {
@@ -114,7 +119,7 @@ namespace MaisGuinchos.Controllers
 
             var userGuid = Guid.Parse(userId);
 
-            var updatedLocation = await _userService.UpdateLocation(userGuid, address);
+            var updatedLocation = await _userService.UpdateLocation(userGuid, address, User);
 
             return Ok(updatedLocation);
         }

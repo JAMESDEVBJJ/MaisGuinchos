@@ -10,7 +10,6 @@ namespace MaisGuinchos.Models
         public Guid ClientId { get; set; }
         public User Client { get; set; }
 
-
         [Required]
         public Guid DriverId { get; set; }
         public User Driver { get; set; }
@@ -31,9 +30,21 @@ namespace MaisGuinchos.Models
         [Range(-180, 180)]
         public double DropoffLon { get; set; }
 
+        [Range(0, double.MaxValue)]
+        public double? DistanceToPickupKm { get; set; }
+
+        [Range(0, double.MaxValue)]
+        public double? DistanceToDestinationKm { get; set; }
+
         [Required]
         [Range(0, double.MaxValue)]
         public double TotalDistanceKm { get; set; }
+
+        [Range(0, int.MaxValue)]
+        public int? DurationMinToPickup { get; set; }
+
+        [Range(0, int.MaxValue)]
+        public int? DurationMinToDestination { get; set; }
 
         [Required]
         [Range(0, int.MaxValue)]
