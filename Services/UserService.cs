@@ -305,52 +305,63 @@ namespace MaisGuinchos.Services
 
             var travel = await _travelService.GetActiveByDriverId(driverId);
 
-            if (travel == null || travel.Status == TowTravelStatus.ArrivedAtPickup)
-                return;
-
-            //nn precisa re traçar nem manda em tempo real nem mostra se tiver guinchando (ou cancelado ou finalizado tmb ne mas vm vendo ne guri)
-
-            var target = _travelService.ResolveTarget(travel);
-
-            var route = await _mapsService.GetRoute(
-                updatedLocation.Latitude,
-                updatedLocation.Longitude,
-                target!.Lat,
-                target!.Lon
-            );
-
-            if (route == null)
-                return;
-
-            var realtime = new RouteRealtimeDTO
+            if (travel != null && travel.Status != TowTravelStatus.ArrivedAtPickup &&
+                travel.Status != TowTravelStatus.ArrivedAtDestination &&
+                travel.Status != TowTravelStatus.Cancelled &&
+                travel.Status != TowTravelStatus.Finished )
             {
-                Type = travel.Status == TowTravelStatus.GoingToClient ?
-                RouteType.DriverToPickup : RouteType.DriverToDestination,
-                Origin = new CoordinateDto
-                {
-                    Lat = updatedLocation.Latitude,
-                    Lon = updatedLocation.Longitude
-                },
-                Destination = new CoordinateDto
-                {
-                    Lat = target.Lat,
-                    Lon = target.Lon
-                },
-                Polyline = route.Polyline,
-                DistanceKm = route.DistanceKm,
-                DurationMinutes = route.DurationMinutes,
-            };
+                var target = _travelService.ResolveTarget(travel);
 
-            await SendRouteUpdate(travel, realtime);
+                var route = await _mapsService.GetRoute(
+                    updatedLocation.Latitude,
+                    updatedLocation.Longitude,
+                    target!.Lat,
+                    target!.Lon
+                );
 
-            if (travel.Status == TowTravelStatus.GoingToClient)
-            {
-               var distanceToPickupM = GeoHelper.CalcularDistanciaKm(updatedLocation.Latitude, updatedLocation.Longitude,
-                   target.Lat, target.Lon) * 1000;
-                if (distanceToPickupM <= DISTANCE_TO_ARRIVED_METERS)
+                if (route == null)
+                    return;
+
+                var realtime = new RouteRealtimeDTO
                 {
-                    travel.Status = TowTravelStatus.ArrivedAtPickup;
-                    await _towTravelRepo.SaveChangesAsync();
+                    Type = travel.Status == TowTravelStatus.GoingToClient ?
+                    RouteType.DriverToPickup : RouteType.DriverToDestination,
+                    Origin = new CoordinateDto
+                    {
+                        Lat = updatedLocation.Latitude,
+                        Lon = updatedLocation.Longitude
+                    },
+                    Destination = new CoordinateDto
+                    {
+                        Lat = target.Lat,
+                        Lon = target.Lon
+                    },
+                    Polyline = route.Polyline,
+                    DistanceKm = route.DistanceKm,
+                    DurationMinutes = route.DurationMinutes,
+                };
+
+                await SendRouteUpdate(travel, realtime);
+
+                if (travel.Status == TowTravelStatus.GoingToClient)
+                {
+                    var distanceToPickupM = GeoHelper.CalcularDistanciaKm(updatedLocation.Latitude, updatedLocation.Longitude,
+                        target.Lat, target.Lon) * 1000;
+                    if (distanceToPickupM <= DISTANCE_TO_ARRIVED_METERS)
+                    {
+                        travel.Status = TowTravelStatus.ArrivedAtPickup;
+                        await _towTravelRepo.SaveChangesAsync();
+                    }
+                }
+                else if (travel.Status == TowTravelStatus.InProgress)
+                {
+                    var distanceToDropoffM = GeoHelper.CalcularDistanciaKm(updatedLocation.Latitude, updatedLocation.Longitude,
+                        target.Lat, target.Lon) * 1000;
+                    if (distanceToDropoffM <= DISTANCE_TO_ARRIVED_METERS)
+                    {
+                        travel.Status = TowTravelStatus.ArrivedAtDestination;
+                        await _towTravelRepo.SaveChangesAsync();
+                    }
                 }
             }
         }

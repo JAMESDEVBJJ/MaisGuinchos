@@ -1,4 +1,5 @@
-﻿using MaisGuinchos.Dtos.Route;
+﻿using MaisGuinchos.Dtos;
+using MaisGuinchos.Dtos.Route;
 using MaisGuinchos.Dtos.Tow.Travel;
 using MaisGuinchos.Models;
 
@@ -10,5 +11,7 @@ namespace MaisGuinchos.Services.Interfaces
         public Task<TowTravel?> GetActiveByClientId(Guid clientId);
         public CoordinateDto? ResolveTarget(TowTravel travel);
         public Task<TowTravelResponseDTO?> GetPendingTowTravel(Guid userId);
+
+        public Task<TravelStatusDTO> StartJourney(Guid userId, Guid travelId);
     }
 }

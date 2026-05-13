@@ -38,6 +38,15 @@ namespace MaisGuinchos.Middlewares
                     error = ex.Message
                 });
             }
+            catch (BusinessException ex)
+            {
+                context.Response.StatusCode = StatusCodes.Status422UnprocessableEntity;
+
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    error = ex.Message
+                });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error unexpected.");
