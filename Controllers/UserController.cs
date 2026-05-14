@@ -114,7 +114,7 @@ namespace MaisGuinchos.Controllers
 
             if (userId == null)
             {
-                return Unauthorized("Usuário do user logado não encontrado.");
+                return Unauthorized("Usuário logado não encontrado.");
             }
 
             var userGuid = Guid.Parse(userId);

@@ -1,9 +1,11 @@
 ﻿using MaisGuinchos.Dtos;
 using MaisGuinchos.Dtos.Route;
 using MaisGuinchos.Dtos.Tow.Travel;
+using MaisGuinchos.Exceptions;
 using MaisGuinchos.Models;
 using MaisGuinchos.Repositorys.Interfaces;
 using MaisGuinchos.Services.Interfaces;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace MaisGuinchos.Services
 {
@@ -47,7 +49,7 @@ namespace MaisGuinchos.Services
                 _ => null
             };
 
-            throw new Exception("Estágio da viagem inválido para decidir o alvo da rota.");
+            throw new BusinessException("Estágio da viagem inválido para decidir o alvo da rota.");
         }
 
         public async Task<TowTravelResponseDTO?> GetPendingTowTravel(Guid userId)
@@ -58,7 +60,7 @@ namespace MaisGuinchos.Services
                 return null;
 
             return await ToDto(towTravel);
-        
+
         }
 
         public async Task<TowTravelResponseDTO?> ToDto(TowTravel entity)
@@ -129,6 +131,54 @@ namespace MaisGuinchos.Services
                     Longitude = entity.TowRequest.DropoffLon,
                     Address = string.Empty
                 }
+            };
+        }
+
+        public async Task<TravelStatusDTO> StartJourney(Guid userId, Guid travelId)
+        {
+            var travel = await _towTravelRepo.GetLastActiveByDriverId(userId);
+
+            if (travel == null)
+                throw new NotFoundException("Viagem não encontrada.");
+
+            if (travel.Id != travelId)
+                throw new BusinessException("Viagem atual não corresponde ao ID fornecido.");
+
+            if (travel.Status != TowTravelStatus.ArrivedAtPickup)
+                throw new BusinessException("Para começar o trajeto a viagem deve estar no status 'Chegou ao ponto de coleta'.");
+
+            travel.Status = TowTravelStatus.InProgress;
+            travel.StartedAt = DateTime.UtcNow;
+
+            await _towTravelRepo.SaveChangesAsync();
+
+            return new TravelStatusDTO
+            {
+                Status = travel.Status
+            };
+        }
+
+        async public Task<TravelStatusDTO> FinishJourney(Guid userId, Guid travelId)
+        {
+            var travel = await _towTravelRepo.GetLastActiveByDriverId(userId);
+
+            if (travel == null)
+                throw new NotFoundException("Viagem não encontrada.");
+
+            if (travel.Id != travelId)
+                throw new BusinessException("Viagem atual não corresponde ao ID fornecido.");
+
+            if (travel.Status != TowTravelStatus.InProgress)
+                throw new BusinessException("Para finalizar o trajeto a viagem deve estar no status 'Em progresso'.");
+
+            travel.Status = TowTravelStatus.ArrivedAtDestination;
+            travel.EndedAt = DateTime.UtcNow;
+
+            await _towTravelRepo.SaveChangesAsync();
+
+            return new TravelStatusDTO
+            {
+                Status = travel.Status
             };
         }
     }
