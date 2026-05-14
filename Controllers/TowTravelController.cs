@@ -45,5 +45,20 @@ namespace MaisGuinchos.Controllers
             var result = await _towTravelService.StartJourney(userId, id);
             return Ok(result);
         }
+
+        [Route("{id}/finish")]
+        [HttpPost]
+        public async Task<IActionResult> FinishJourney(Guid id)
+        {
+            var user = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(user) || !Guid.TryParse(user, out var userId))
+            {
+                return Unauthorized("Usuário logado não encontrado.");
+            }
+
+            var result = await _towTravelService.FinishJourney(userId, id);
+            return Ok(result);
+        }
     }
 }

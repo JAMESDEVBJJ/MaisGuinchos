@@ -60,7 +60,7 @@ namespace MaisGuinchos.Services
                 return null;
 
             return await ToDto(towTravel);
-        
+
         }
 
         public async Task<TowTravelResponseDTO?> ToDto(TowTravel entity)
@@ -148,6 +148,31 @@ namespace MaisGuinchos.Services
                 throw new BusinessException("Para começar o trajeto a viagem deve estar no status 'Chegou ao ponto de coleta'.");
 
             travel.Status = TowTravelStatus.InProgress;
+            travel.StartedAt = DateTime.UtcNow;
+
+            await _towTravelRepo.SaveChangesAsync();
+
+            return new TravelStatusDTO
+            {
+                Status = travel.Status
+            };
+        }
+
+        async public Task<TravelStatusDTO> FinishJourney(Guid userId, Guid travelId)
+        {
+            var travel = await _towTravelRepo.GetLastActiveByDriverId(userId);
+
+            if (travel == null)
+                throw new NotFoundException("Viagem não encontrada.");
+
+            if (travel.Id != travelId)
+                throw new BusinessException("Viagem atual não corresponde ao ID fornecido.");
+
+            if (travel.Status != TowTravelStatus.InProgress)
+                throw new BusinessException("Para finalizar o trajeto a viagem deve estar no status 'Em progresso'.");
+
+            travel.Status = TowTravelStatus.ArrivedAtDestination;
+            travel.EndedAt = DateTime.UtcNow;
 
             await _towTravelRepo.SaveChangesAsync();
 

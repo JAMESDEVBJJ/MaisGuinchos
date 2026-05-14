@@ -13,5 +13,7 @@ namespace MaisGuinchos.Services.Interfaces
         public Task<TowTravelResponseDTO?> GetPendingTowTravel(Guid userId);
 
         public Task<TravelStatusDTO> StartJourney(Guid userId, Guid travelId);
+
+        public Task<TravelStatusDTO> FinishJourney(Guid userId, Guid travelId);
     }
 }
