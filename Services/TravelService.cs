@@ -2,10 +2,11 @@
 using MaisGuinchos.Dtos.Route;
 using MaisGuinchos.Dtos.Tow.Travel;
 using MaisGuinchos.Exceptions;
+using MaisGuinchos.Hubs;
 using MaisGuinchos.Models;
 using MaisGuinchos.Repositorys.Interfaces;
 using MaisGuinchos.Services.Interfaces;
-using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.SignalR;
 
 namespace MaisGuinchos.Services
 {
@@ -13,11 +14,13 @@ namespace MaisGuinchos.Services
     {
         private readonly ITowTravelRepo _towTravelRepo;
         private readonly IMapsService _mapsService;
+        private readonly IHubContext<TowHub> _hubContext;
 
-        public TravelService(ITowTravelRepo towTravelRepo, IMapsService mapsService)
+        public TravelService(ITowTravelRepo towTravelRepo, IMapsService mapsService, IHubContext<TowHub> hubContext)
         {
             _towTravelRepo = towTravelRepo;
             _mapsService = mapsService;
+            _hubContext = hubContext;
         }
 
         public Task<TowTravel?> GetActiveByDriverId(Guid driverId)
@@ -130,6 +133,14 @@ namespace MaisGuinchos.Services
                     Latitude = entity.TowRequest.DropoffLat,
                     Longitude = entity.TowRequest.DropoffLon,
                     Address = string.Empty
+                },
+
+                Truck = new Dtos.Guincho.TowGuinchoDTO
+                {
+                    Id = entity.Driver.Guincho!.Id,
+                    Model = entity.Driver.Guincho.Modelo!,
+                    Color = entity.Driver.Guincho.Cor!,
+                    Plate = entity.Driver.Guincho.Placa!
                 }
             };
         }
@@ -148,6 +159,8 @@ namespace MaisGuinchos.Services
                 throw new BusinessException("Para começar o trajeto a viagem deve estar no status 'Chegou ao ponto de coleta'.");
 
             travel.Status = TowTravelStatus.InProgress;
+            await _hubContext.Clients.User(travel.TowRequest.ClientId.ToString())
+                .SendAsync("JourneyStarted");
             travel.StartedAt = DateTime.UtcNow;
 
             await _towTravelRepo.SaveChangesAsync();
@@ -166,12 +179,15 @@ namespace MaisGuinchos.Services
                 throw new NotFoundException("Viagem não encontrada.");
 
             if (travel.Id != travelId)
-                throw new BusinessException("Viagem atual não corresponde ao ID fornecido.");
+                throw new BusinessException("Viagem informada não corresponde a viagem atual.");    
 
-            if (travel.Status != TowTravelStatus.InProgress)
-                throw new BusinessException("Para finalizar o trajeto a viagem deve estar no status 'Em progresso'.");
+            if (travel.Status != TowTravelStatus.ArrivedAtDestination)
+                throw new BusinessException("Para finalizar a viagem deve estar no status 'Chegou ao destino'.");
 
-            travel.Status = TowTravelStatus.ArrivedAtDestination;
+            await _hubContext.Clients.User(travel.TowRequest.ClientId.ToString())
+                .SendAsync("JourneyFinished");
+
+            travel.Status = TowTravelStatus.Finished;
             travel.EndedAt = DateTime.UtcNow;
 
             await _towTravelRepo.SaveChangesAsync();

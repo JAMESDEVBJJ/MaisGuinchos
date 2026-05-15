@@ -44,9 +44,7 @@ namespace MaisGuinchos.Repositorys
         {
             return await _appDbContext.TowTravels.
                 Where(t => (t.DriverId == userId || t.TowRequest.ClientId == userId) &&
-                (t.Status == TowTravelStatus.GoingToClient ||
-                t.Status == TowTravelStatus.InProgress ||
-                t.Status == TowTravelStatus.ArrivedAtPickup))
+                (t.Status != TowTravelStatus.Cancelled && t.Status != TowTravelStatus.Finished))
                 .Include(t => t.Driver).ThenInclude(d => d.Guincho)
                 .Include(t => t.TowRequest).ThenInclude(tr => tr.Client)
                 .OrderByDescending(t => t.CreatedAt).FirstOrDefaultAsync();

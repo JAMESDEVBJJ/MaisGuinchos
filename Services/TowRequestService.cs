@@ -1,4 +1,5 @@
-﻿using MaisGuinchos.Dtos.Tow;
+﻿using MaisGuinchos.Dtos.Guincho;
+using MaisGuinchos.Dtos.Tow;
 using MaisGuinchos.Exceptions;
 using MaisGuinchos.Hubs;
 using MaisGuinchos.Migrations;
@@ -302,7 +303,16 @@ namespace MaisGuinchos.Services
                 DurationMinToPickup = towRequest.DurationMinToPickup.GetValueOrDefault(),
                 DurationMinToDestination = towRequest.DurationMinToDestination.GetValueOrDefault(),
                 DistanceToPickupKm = towRequest.DistanceToPickupKm.GetValueOrDefault(),
-                DistanceToDestinationKm = towRequest.DistanceToDestinationKm.GetValueOrDefault()
+                DistanceToDestinationKm = towRequest.DistanceToDestinationKm.GetValueOrDefault(),
+                Questions = towRequest.VehicleIssue, 
+                Notes = towRequest.Notes,
+                Truck = new TowGuinchoDTO
+                {
+                    Id = towRequest.Driver.Guincho!.Id,
+                    Model = towRequest.Driver.Guincho.Modelo,
+                    Color = towRequest.Driver.Guincho.Cor,
+                    Plate = towRequest.Driver.Guincho.Placa
+                }
             };
 
             await _hubContext.Clients.User(towRequest.ClientId.ToString()).SendAsync("TowRequestAccepted", response);
@@ -371,7 +381,16 @@ namespace MaisGuinchos.Services
                 DistanceToDestinationKm = towRequest.DistanceToDestinationKm.GetValueOrDefault(),
                 FinalPrice = towRequest.CounterOfferPrice ?? towRequest.SuggestedPrice,
                 TowDriverId = towRequest.DriverId,
-                EstimatedArrivalTime = towRequest.DurationMinutes
+                EstimatedArrivalTime = towRequest.DurationMinutes,
+                Questions = towRequest.VehicleIssue,
+                Notes = towRequest.Notes,
+                Truck = new TowGuinchoDTO
+                {
+                    Id = towRequest.Driver.Guincho!.Id,
+                    Model = towRequest.Driver.Guincho.Modelo,
+                    Color = towRequest.Driver.Guincho.Cor,
+                    Plate = towRequest.Driver.Guincho.Placa
+                }
             };
 
             await _hubContext.Clients.User(towRequest.DriverId.ToString()).SendAsync("CounterOfferAccepted", response);

@@ -30,7 +30,7 @@ namespace MaisGuinchos.Services
 
         private readonly PasswordHasher _hasherUtil = new PasswordHasher();
 
-        private const double DISTANCE_TO_ARRIVED_METERS = 150;
+        private const double DISTANCE_TO_ARRIVED_METERS = 200;
 
         public UserService(IUserRepo userRepo,
             IMapsService mapsService,
@@ -350,6 +350,8 @@ namespace MaisGuinchos.Services
                         travel.Status = TowTravelStatus.ArrivedAtPickup;
                         await _hubContext.Clients.User(travel.TowRequest.ClientId.ToString())
                             .SendAsync("DriverArrivedAtPickup");
+                        await _hubContext.Clients.User(travel.DriverId.ToString())
+                            .SendAsync("ArrivedAtPickup");
                         await _towTravelRepo.SaveChangesAsync();
                     }
                 }
@@ -362,6 +364,8 @@ namespace MaisGuinchos.Services
                         travel.Status = TowTravelStatus.ArrivedAtDestination;
                         await _hubContext.Clients.User(travel.TowRequest.ClientId.ToString())
                             .SendAsync("DriverArrivedAtDestination");
+                        await _hubContext.Clients.User(travel.DriverId.ToString())
+                           .SendAsync("ArrivedAtDestination");
                         await _towTravelRepo.SaveChangesAsync();
                     }
                 }

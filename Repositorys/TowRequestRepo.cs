@@ -21,14 +21,17 @@ namespace MaisGuinchos.Repositorys
             return await _appDbContext.TowRequests.AnyAsync(tr =>
                 tr.ClientId == clientId &&
                 tr.DriverId == driverId &&
-                (tr.Status == TowRequestStatus.WaitingDriverResponse)); //bota  || tr.Status == TowRequestStatus.CounterOfferSent e || accept/em corrida por que ainda sao corridas ativas
+                (tr.Status == TowRequestStatus.WaitingDriverResponse ||
+                tr.Status == TowRequestStatus.CounterOfferSent ||
+                tr.Status == TowRequestStatus.Accepted)); 
         }
 
         public async Task<TowRequest?> GetByIdAsync(Guid id)
         {
             return await _appDbContext.TowRequests
                 .Include(x => x.Client)
-                .Include(x => x.Driver).FirstOrDefaultAsync(tr => tr.Id == id);
+                .Include(x => x.Driver).ThenInclude(d => d.Guincho)
+                .FirstOrDefaultAsync(tr => tr.Id == id);
         }
 
         public async Task<TowRequest?> GetByIdIncludeLocations(Guid idTowRequest)
