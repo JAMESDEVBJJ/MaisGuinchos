@@ -348,10 +348,12 @@ namespace MaisGuinchos.Services
                     if (distanceToPickupM <= DISTANCE_TO_ARRIVED_METERS)
                     {
                         travel.Status = TowTravelStatus.ArrivedAtPickup;
+
                         await _hubContext.Clients.User(travel.TowRequest.ClientId.ToString())
                             .SendAsync("DriverArrivedAtPickup");
                         await _hubContext.Clients.User(travel.DriverId.ToString())
                             .SendAsync("ArrivedAtPickup");
+
                         await _towTravelRepo.SaveChangesAsync();
                     }
                 }
@@ -362,10 +364,12 @@ namespace MaisGuinchos.Services
                     if (distanceToDropoffM <= DISTANCE_TO_ARRIVED_METERS)
                     {
                         travel.Status = TowTravelStatus.ArrivedAtDestination;
+
                         await _hubContext.Clients.User(travel.TowRequest.ClientId.ToString())
                             .SendAsync("DriverArrivedAtDestination");
                         await _hubContext.Clients.User(travel.DriverId.ToString())
                            .SendAsync("ArrivedAtDestination");
+
                         await _towTravelRepo.SaveChangesAsync();
                     }
                 }

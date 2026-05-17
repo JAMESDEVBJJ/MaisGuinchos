@@ -47,5 +47,7 @@ namespace MaisGuinchos.Dtos.Tow.Travel
         public LocationDTO Destination { get; set; }
 
         public TowGuinchoDTO Truck { get; set; }
+
+        public string DriverPhoto { get; set; }
     }
 }

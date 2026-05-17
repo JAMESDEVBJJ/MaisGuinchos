@@ -312,7 +312,8 @@ namespace MaisGuinchos.Services
                     Model = towRequest.Driver.Guincho.Modelo,
                     Color = towRequest.Driver.Guincho.Cor,
                     Plate = towRequest.Driver.Guincho.Placa
-                }
+                },
+                DriverPhotoUrl = towRequest.Driver.Guincho.Foto
             };
 
             await _hubContext.Clients.User(towRequest.ClientId.ToString()).SendAsync("TowRequestAccepted", response);
@@ -390,7 +391,8 @@ namespace MaisGuinchos.Services
                     Model = towRequest.Driver.Guincho.Modelo,
                     Color = towRequest.Driver.Guincho.Cor,
                     Plate = towRequest.Driver.Guincho.Placa
-                }
+                },
+                DriverPhotoUrl = towRequest.Driver.Guincho.Foto
             };
 
             await _hubContext.Clients.User(towRequest.DriverId.ToString()).SendAsync("CounterOfferAccepted", response);

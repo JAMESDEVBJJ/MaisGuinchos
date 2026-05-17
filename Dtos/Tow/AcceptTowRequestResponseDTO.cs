@@ -15,6 +15,8 @@ namespace MaisGuinchos.Dtos.Tow
         [Required]
         public Guid TowDriverId { get; set; }
 
+        public string? DriverPhotoUrl { get; set; }
+
         [Required]
         public decimal FinalPrice { get; set; }
 
