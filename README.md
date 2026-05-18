@@ -9,7 +9,7 @@ O sistema atende **motoristas, clientes e empresas**, permitindo:
 - Calcular rota e viagem  
 - Criar solicitações de reboque  
 - Motoristas aceitarem ou enviarem contra propostas
-- Rota da viagem e propostas em tempo real
+- Pedido e corrida controlada por estados, com contra proposta e rota em tempo real
 
 ---
 
