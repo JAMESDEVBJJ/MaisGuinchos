@@ -22,8 +22,7 @@ namespace MaisGuinchos.Repositorys
                 tr.ClientId == clientId &&
                 tr.DriverId == driverId &&
                 (tr.Status == TowRequestStatus.WaitingDriverResponse ||
-                tr.Status == TowRequestStatus.CounterOfferSent ||
-                tr.Status == TowRequestStatus.Accepted));
+                tr.Status == TowRequestStatus.CounterOfferSent));
         }
 
         public async Task<TowRequest?> GetByIdAsync(Guid id)

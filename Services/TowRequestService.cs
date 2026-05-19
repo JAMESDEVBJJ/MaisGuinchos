@@ -37,7 +37,7 @@ namespace MaisGuinchos.Services
             var exists = await _towRequestRepo.HasActiveRequestAsync(clientId, dto.DriverId);
 
             if (exists)
-                throw new Exception("Já existe uma solicitação ativa para este motorista.");
+                throw new BusinessException("Já existe uma solicitação ativa para este motorista.");
 
             var request = new Models.TowRequest
             {
