@@ -17,6 +17,8 @@ namespace MaisGuinchos.Dtos.Tow
 
         public string? DriverPhotoUrl { get; set; }
 
+        public string VehicleModel { get; set; }
+
         [Required]
         public decimal FinalPrice { get; set; }
 
@@ -76,5 +78,7 @@ namespace MaisGuinchos.Dtos.Tow
         public string? Questions { get; set; }
 
         public TowGuinchoDTO Truck { get; set; }
+
+        public string DriverPhone { get; set; }
     }
 }

@@ -292,13 +292,13 @@ namespace MaisGuinchos.Services
 
             if (role == "Motorista")
             {
-                await HandleDriverLocationUpdate(id, locationAdded);
+                await HandleRealtimeTravelTracking(id, locationAdded);
             }
 
             return locationReturn;
         }
 
-        private async Task HandleDriverLocationUpdate(Guid driverId, Location updatedLocation)
+        private async Task HandleRealtimeTravelTracking(Guid driverId, Location updatedLocation)
         {
             if (updatedLocation?.Latitude == null || updatedLocation?.Longitude == null)
                 return;

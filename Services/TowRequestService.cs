@@ -177,7 +177,6 @@ namespace MaisGuinchos.Services
             return new PutTowCounterOfferDTO
             {
                 Id = towRequest.Id,
-
                 ClientId = towRequest.ClientId,
                 ClientName = towRequest.Client.Name,
 
@@ -186,23 +185,17 @@ namespace MaisGuinchos.Services
 
                 PickupLat = towRequest.PickupLat,
                 PickupLon = towRequest.PickupLon,
-
                 DropoffLat = towRequest.DropoffLat,
                 DropoffLon = towRequest.DropoffLon,
-
                 TotalDistanceKm = towRequest.TotalDistanceKm,
                 DurationMinutes = towRequest.DurationMinutes,
-
                 SuggestedPrice = towRequest.SuggestedPrice,
                 FinalPrice = towRequest.FinalPrice,
-
                 CounterOfferPrice = towRequest.CounterOfferPrice,
                 CounterOfferPercent = towRequest.CounterOfferPercent,
                 CounterOfferReason = towRequest.CounterOfferReason,
                 CounterOfferAt = towRequest.CounterOfferAt,
-
                 Status = (int)towRequest.Status,
-
                 CreatedAt = towRequest.CreatedAt
             };
         }
@@ -282,6 +275,13 @@ namespace MaisGuinchos.Services
                 throw new BadRequestException("Localização do motorista não encontrada");
             }
 
+            var guincho = towRequest.Driver.Guincho;
+
+            if (guincho == null)
+            {
+                throw new BadRequestException("Guincho do motorista não encontrado");
+            }
+
             await _towTravelRepo.AddAsync(towTravel);
 
             await _towRequestRepo.UpdateAsync(towRequest);
@@ -304,16 +304,18 @@ namespace MaisGuinchos.Services
                 DurationMinToDestination = towRequest.DurationMinToDestination.GetValueOrDefault(),
                 DistanceToPickupKm = towRequest.DistanceToPickupKm.GetValueOrDefault(),
                 DistanceToDestinationKm = towRequest.DistanceToDestinationKm.GetValueOrDefault(),
-                Questions = towRequest.VehicleIssue, 
+                Questions = towRequest.VehicleIssue,
                 Notes = towRequest.Notes,
                 Truck = new TowGuinchoDTO
                 {
-                    Id = towRequest.Driver.Guincho!.Id,
-                    Model = towRequest.Driver.Guincho.Modelo,
-                    Color = towRequest.Driver.Guincho.Cor,
-                    Plate = towRequest.Driver.Guincho.Placa
+                    Id = guincho.Id,
+                    Model = guincho.Modelo,
+                    Color = guincho.Cor,
+                    Plate = guincho.Placa
                 },
-                DriverPhotoUrl = towRequest.Driver.Guincho.Foto
+                VehicleModel = towRequest.VehicleType ?? "Modelo desconhecido",
+                DriverPhotoUrl = guincho.Foto,
+                DriverPhone = towRequest.Driver.NumeroTelefone
             };
 
             await _hubContext.Clients.User(towRequest.ClientId.ToString()).SendAsync("TowRequestAccepted", response);
@@ -344,6 +346,12 @@ namespace MaisGuinchos.Services
             if (driverLocation == null)
             {
                 throw new BadRequestException("Localização do motorista não encontrada");
+            }
+
+            var guincho = towRequest.Driver.Guincho;
+            if (guincho == null)
+            {
+                throw new BadRequestException("Guincho do motorista não encontrado");
             }
 
             await _towRequestRepo.UpdateAsync(towRequest);
@@ -387,12 +395,14 @@ namespace MaisGuinchos.Services
                 Notes = towRequest.Notes,
                 Truck = new TowGuinchoDTO
                 {
-                    Id = towRequest.Driver.Guincho!.Id,
-                    Model = towRequest.Driver.Guincho.Modelo,
-                    Color = towRequest.Driver.Guincho.Cor,
-                    Plate = towRequest.Driver.Guincho.Placa
+                    Id = guincho.Id,
+                    Model = guincho.Modelo,
+                    Color = guincho.Cor,
+                    Plate = guincho.Placa
                 },
-                DriverPhotoUrl = towRequest.Driver.Guincho.Foto
+                VehicleModel = towRequest.VehicleType ?? "Modelo desconhecido",
+                DriverPhotoUrl = guincho.Foto,
+                DriverPhone = towRequest.Driver.NumeroTelefone
             };
 
             await _hubContext.Clients.User(towRequest.DriverId.ToString()).SendAsync("CounterOfferAccepted", response);
