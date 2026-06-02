@@ -11,6 +11,8 @@ namespace MaisGuinchos.Repositorys.Interfaces
 
         Task<List<TowRequest>> GetPendingsAsync(Guid driverId);
 
+        Task<List<TowRequest>> GetClientPendingsAsync(Guid clientId);
+
         Task<TowRequest> UpdateAsync(TowRequest towRequest);
 
         Task<bool> HasActiveRequestAsync(Guid clientId, Guid driverId);

@@ -58,6 +58,22 @@ namespace MaisGuinchos.Controllers
             return Ok(pendingRequests);
         }
 
+        [HttpGet("my-actives")]
+        [Authorize(Roles = "Cliente")]
+        public async Task<IActionResult> GetActivesTowRequestsClient()
+        {
+            var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(idClaim) || !Guid.TryParse(idClaim, out var clientId))
+            {
+                return Unauthorized();
+            }
+
+            var pendingRequests = await _towRequestService.GetTowsPendingsForClient(clientId);
+
+            return Ok(pendingRequests);
+        }
+
         [HttpPut("{id}/counter-offer")]
         [Authorize(Roles = "Motorista")]
         public async Task<IActionResult> TowRequestCounterOffer(Guid id, [FromBody] TowRequestCounterOfferDto counterOffer)

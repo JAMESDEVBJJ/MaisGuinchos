@@ -124,6 +124,40 @@ namespace MaisGuinchos.Services
             return result;
         }
 
+        public async Task<List<GetTowsPendingsDTO>> GetTowsPendingsForClient(Guid clientId)
+        {
+            var tows = await _towRequestRepo.GetClientPendingsAsync(clientId);
+
+            if (tows == null || !tows.Any())
+                return new List<GetTowsPendingsDTO>();
+
+            var result = tows.Select(t => new GetTowsPendingsDTO
+            {
+                Id = t.Id,
+                ClientName = t.Client.Name,
+                ClientId = t.Client.Id,
+                DriverName = t.Driver.Name,
+                DriverId = t.DriverId,
+                PickupLat = t.PickupLat,
+                PickupLon = t.PickupLon,
+                DropoffLat = t.DropoffLat,
+                DropoffLon = t.DropoffLon,
+                TotalDistanceKm = t.TotalDistanceKm,
+                DurationMinutes = t.DurationMinutes,
+                SuggestedPrice = t.SuggestedPrice,
+                VehicleType = t.VehicleType,
+                VehicleIssue = t.VehicleIssue,
+                Notes = t.Notes,
+                Status = t.Status,
+                CreatedAt = t.CreatedAt,
+                CounterOfferAt = t.CounterOfferAt,
+                CounterOfferPercent = t.CounterOfferPercent,
+                CounterOfferPrice   = t.CounterOfferPrice,
+                CounterOfferReason = t.CounterOfferReason
+            }).ToList();
+            return result;
+        }
+
         public async Task<PutTowCounterOfferDTO> UpdateTowRequestCounterOffer(Guid id, TowRequestCounterOfferDto counterOffer)
         {
             var towRequest = await _towRequestRepo.GetByIdAsync(id);

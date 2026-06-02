@@ -1,4 +1,5 @@
 ﻿using MaisGuinchos.Models;
+using Microsoft.AspNetCore.Components.Server;
 
 namespace MaisGuinchos.Dtos.Tow
 {
@@ -9,6 +10,10 @@ namespace MaisGuinchos.Dtos.Tow
         public string ClientName { get; set; }
 
         public Guid ClientId { get; set; }
+
+        public string DriverName { get; set; }
+
+        public Guid DriverId { get; set; }
 
         public double PickupLat { get; set; }
         public double PickupLon { get; set; }
@@ -27,6 +32,14 @@ namespace MaisGuinchos.Dtos.Tow
         public string? VehicleIssue { get; set; }
 
         public string? Notes { get; set; }
+
+        public decimal? CounterOfferPrice { get; set; }
+
+        public decimal? CounterOfferPercent { get; set; }
+
+        public string? CounterOfferReason { get; set; }
+
+        public DateTime? CounterOfferAt { get; set; }
 
         public TowRequestStatus Status { get; set; }
 

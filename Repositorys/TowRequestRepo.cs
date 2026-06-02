@@ -50,10 +50,26 @@ namespace MaisGuinchos.Repositorys
         {
             return await _appDbContext.TowRequests
                 .Where(tr => tr.DriverId == driverId
-                    && tr.Status == TowRequestStatus.WaitingDriverResponse)
+                    && (tr.Status == TowRequestStatus.WaitingDriverResponse ||
+                    tr.Status == TowRequestStatus.CounterOfferSent ||
+                    tr.Status == TowRequestStatus.CounterOfferRejected) )
                 .Where(tr => tr.CreatedAt == _appDbContext.TowRequests
                     .Where(x => x.ClientId == tr.ClientId)
                     .Max(x => x.CreatedAt))
+                .Include(x => x.Client)
+                .ToListAsync();
+        }
+
+        public async Task<List<TowRequest>> GetClientPendingsAsync(Guid clientId)
+        {
+            return await _appDbContext.TowRequests
+                .Where(tr => tr.ClientId == clientId
+                    && (
+                        tr.Status == TowRequestStatus.WaitingDriverResponse ||
+                        tr.Status == TowRequestStatus.CounterOfferSent ||
+                        tr.Status == TowRequestStatus.CounterOfferRejected
+                    ))
+                .Include(x => x.Driver)
                 .Include(x => x.Client)
                 .ToListAsync();
         }
