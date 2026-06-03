@@ -349,6 +349,7 @@ namespace MaisGuinchos.Services
                 },
                 VehicleModel = towRequest.VehicleType ?? "Modelo desconhecido",
                 DriverPhotoUrl = guincho.Foto,
+                DriverName = towRequest.Driver.Name,
                 DriverPhone = towRequest.Driver.NumeroTelefone
             };
 
@@ -436,6 +437,7 @@ namespace MaisGuinchos.Services
                 },
                 VehicleModel = towRequest.VehicleType ?? "Modelo desconhecido",
                 DriverPhotoUrl = guincho.Foto,
+                DriverName = towRequest.Driver.Name,
                 DriverPhone = towRequest.Driver.NumeroTelefone
             };
 
