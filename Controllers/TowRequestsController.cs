@@ -28,9 +28,9 @@ namespace MaisGuinchos.Controllers
                 return Unauthorized();
             }
 
-            var towRequestId = await _towRequestService.CreateAsync(clientId, dto);
+            var towRequest = await _towRequestService.CreateAsync(clientId, dto);
 
-            return Ok(new { TowRequestId = towRequestId });
+            return Ok(towRequest);
         }
 
         [HttpGet("{id}")]

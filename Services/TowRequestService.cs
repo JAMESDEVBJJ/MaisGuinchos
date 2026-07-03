@@ -32,7 +32,7 @@ namespace MaisGuinchos.Services
             _locationService = locationService;
         }
 
-        public async Task<Guid> CreateAsync(Guid clientId, CreateTowRequestDto dto)
+        public async Task<GetTowsPendingsDTO> CreateAsync(Guid clientId, CreateTowRequestDto dto)
         {
             var exists = await _towRequestRepo.HasActiveRequestAsync(clientId, dto.DriverId);
 
@@ -65,14 +65,19 @@ namespace MaisGuinchos.Services
             await _towRequestRepo.SaveChangesAsync();
 
             var user = await _userService.GetUserById(clientId);
+            var driver = await _userService.GetUserById(dto.DriverId);
 
             var clientName = user?.Name ?? "Unknown Client";
+            var driverName = driver.Name ?? "Unknown Driver";
 
-            await _hubContext.Clients.Group(dto.DriverId.ToString()).SendAsync("ReceiveTowRequest", new GetTowsPendingsDTO
+            var towPending = new GetTowsPendingsDTO
             {
                 Id = request.Id,
                 ClientId = clientId,
+                DriverId = request.DriverId,
+                Status = request.Status,
                 ClientName = clientName,
+                DriverName = driverName,
                 PickupLat = request.PickupLat,
                 PickupLon = request.PickupLon,
                 DropoffLat = request.DropoffLat,
@@ -83,10 +88,12 @@ namespace MaisGuinchos.Services
                 VehicleType = request.VehicleType,
                 VehicleIssue = request.VehicleIssue,
                 Notes = request.Notes,
-                CreatedAt = request.CreatedAt,
-            });
+                CreatedAt = request.CreatedAt
+            };
 
-            return request.Id;
+            await _hubContext.Clients.Group(dto.DriverId.ToString()).SendAsync("ReceiveTowRequest", towPending  );
+
+            return towPending;
         }
 
         public async Task<Models.TowRequest> GetTowRequestById(Guid towRequestId)
@@ -155,6 +162,7 @@ namespace MaisGuinchos.Services
                 CounterOfferPrice   = t.CounterOfferPrice,
                 CounterOfferReason = t.CounterOfferReason
             }).ToList();
+
             return result;
         }
 

@@ -54,7 +54,8 @@ namespace MaisGuinchos.Repositorys
                     tr.Status == TowRequestStatus.CounterOfferSent ||
                     tr.Status == TowRequestStatus.CounterOfferRejected) )
                 .Where(tr => tr.CreatedAt == _appDbContext.TowRequests
-                    .Where(x => x.ClientId == tr.ClientId)
+                    .Where(x => x.ClientId == tr.ClientId &&
+                                x.DriverId == tr.DriverId)
                     .Max(x => x.CreatedAt))
                 .Include(x => x.Client)
                 .ToListAsync();
@@ -62,18 +63,22 @@ namespace MaisGuinchos.Repositorys
 
         public async Task<List<TowRequest>> GetClientPendingsAsync(Guid clientId)
         {
-            return await _appDbContext.TowRequests
-                .Where(tr => tr.ClientId == clientId
-                    && (
-                        tr.Status == TowRequestStatus.WaitingDriverResponse ||
-                        tr.Status == TowRequestStatus.CounterOfferSent ||
-                        tr.Status == TowRequestStatus.CounterOfferRejected
-                    ))
-                .Include(x => x.Driver)
-                .Include(x => x.Client)
+            var ids = await _appDbContext.TowRequests
+                .Where(x => x.ClientId == clientId)
+                .GroupBy(x => x.DriverId)
+                .Select(g => g.OrderByDescending(x => x.CreatedAt).First().Id)
                 .ToListAsync();
-        }
 
+            var requests = await _appDbContext.TowRequests
+                .Where(x => ids.Contains(x.Id))
+                .Include(x => x.Client)
+                .Include(x => x.Driver)
+                .Where(x => x.Status != TowRequestStatus.Cancelled &&
+                            x.Status != TowRequestStatus.Accepted)
+                .ToListAsync();
+
+            return requests;
+        }
         public async Task<TowRequest> UpdateAsync(TowRequest towRequest)
         {
             _appDbContext.TowRequests.Update(towRequest);
