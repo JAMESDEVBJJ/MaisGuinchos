@@ -2,6 +2,7 @@
 using MaisGuinchos.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using System.Security.Claims;
 
 namespace MaisGuinchos.Controllers
@@ -40,6 +41,22 @@ namespace MaisGuinchos.Controllers
             if (towRequest == null)
                 return NotFound("Nenhum pedido de reboque encontrado.");
             return Ok(towRequest);
+        }
+
+        [HttpGet("{userId}/all")]
+        [Authorize]
+        public async Task<IActionResult> GetTowsRequestsByUserId(Guid userId)
+        {
+            var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(idClaim) || !Guid.TryParse(idClaim, out var clientId))
+            {
+                return Unauthorized();
+            }
+
+            var towsRequests = await _towRequestService.GetTowsRequestsByUserId(userId);
+
+            return Ok(towsRequests);    
         }
 
         [HttpGet("pendings")]

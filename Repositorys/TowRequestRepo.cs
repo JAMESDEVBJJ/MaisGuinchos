@@ -46,6 +46,15 @@ namespace MaisGuinchos.Repositorys
             await _appDbContext.SaveChangesAsync();
         }
 
+        public async Task<List<TowRequest>> GetByUserIdAsync(Guid userId)
+        {
+            return await _appDbContext.TowRequests
+                .Where(tr => tr.ClientId == userId)
+                .Include(x => x.Driver)
+                .Include(x => x.Client)
+                .ToListAsync();
+        }
+
         public async Task<List<TowRequest>> GetPendingsAsync(Guid driverId)
         {
             return await _appDbContext.TowRequests
@@ -55,6 +64,7 @@ namespace MaisGuinchos.Repositorys
                     tr.Status == TowRequestStatus.CounterOfferRejected) )
                 .Where(tr => tr.CreatedAt == _appDbContext.TowRequests
                     .Where(x => x.ClientId == tr.ClientId)
+                    .Where(x => x.DriverId == tr.DriverId)
                     .Max(x => x.CreatedAt))
                 .Include(x => x.Client)
                 .ToListAsync();

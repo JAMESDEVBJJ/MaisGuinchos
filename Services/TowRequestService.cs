@@ -95,6 +95,58 @@ namespace MaisGuinchos.Services
             return request ?? throw new Exception("Tow request not found");
         }
 
+        public async Task<List<GetTowsRequestsByUserIdDTO>> GetTowsRequestsByUserId(Guid userId)
+        {
+            var tows = await _towRequestRepo.GetByUserIdAsync(userId);
+
+            if (tows == null || !tows.Any())
+                return new List<GetTowsRequestsByUserIdDTO>();
+
+            var result = tows.Select(t => new GetTowsRequestsByUserIdDTO
+            {
+                Id = t.Id,
+
+                ClientId = t.ClientId,
+                ClientName = t.Client.Name,
+
+                DriverId = t.DriverId,
+                DriverName = t.Driver.Name,
+
+                PickupLat = t.PickupLat,
+                PickupLon = t.PickupLon,
+
+                DropoffLat = t.DropoffLat,
+                DropoffLon = t.DropoffLon,
+
+                DistanceToPickupKm = t.DistanceToPickupKm,
+                DistanceToDestinationKm = t.DistanceToDestinationKm,
+                TotalDistanceKm = t.TotalDistanceKm,
+
+                DurationMinToPickup = t.DurationMinToPickup,
+                DurationMinToDestination = t.DurationMinToDestination,
+                DurationMinutes = t.DurationMinutes,
+
+                SuggestedPrice = t.SuggestedPrice,
+                FinalPrice = t.FinalPrice,
+
+                VehicleType = t.VehicleType,
+                VehicleIssue = t.VehicleIssue,
+                Notes = t.Notes,
+
+                CounterOfferPrice = t.CounterOfferPrice,
+                CounterOfferPercent = t.CounterOfferPercent,
+                CounterOfferReason = t.CounterOfferReason,
+                CounterOfferAt = t.CounterOfferAt,
+
+                Status = t.Status,
+
+                CreatedAt = t.CreatedAt,
+                UpdatedAt = t.UpdatedAt
+            }).ToList();
+
+            return result;
+        }
+
         public async Task<List<GetTowsPendingsDTO>> GetTowsPendings(Guid driverId)
         {
             var tows = await _towRequestRepo.GetPendingsAsync(driverId);
