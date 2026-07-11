@@ -32,6 +32,15 @@ namespace MaisGuinchos.Repositorys
                 t.Status != TowTravelStatus.Cancelled));
         }
 
+        public async Task<List<TowTravel>> GetAllByUserId(Guid userId)
+        {
+            return await _appDbContext.TowTravels
+                .Where(t => t.DriverId == userId || t.TowRequest.ClientId == userId)
+                .Include(t => t.Driver).ThenInclude(d => d.Guincho)
+                .Include(t => t.TowRequest).ThenInclude(tr => tr.Client)
+                .OrderByDescending(t => t.CreatedAt).ToListAsync();
+        }
+
         public async Task<TowTravel?> GetActiveByClientId(Guid clientId)
         {
             return await _appDbContext.TowTravels
