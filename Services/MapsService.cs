@@ -32,6 +32,24 @@ namespace MaisGuinchos.Services
             return JsonSerializer.Deserialize<List<NominatimReturnDTO>>(content);
         }
 
+        public async Task<string> GetAddressAsync(double lat, double lon)
+        {
+            var latInvariant = lat.ToString(CultureInfo.InvariantCulture);
+            var lonInvariant = lon.ToString(CultureInfo.InvariantCulture);
+
+            string addressUrl = $"https://nominatim.openstreetmap.org/reverse?format=json&lat={latInvariant}&lon={lonInvariant}";
+            
+            var response = await _httpClient.GetAsync(addressUrl);
+
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            var nominatimReturn = JsonSerializer.Deserialize<NominatimReturnDTO>(content);
+
+            return nominatimReturn?.display_name ?? "Endereço não encontrado";
+        }
+
         public async Task<RouteDTO>? GetRouteDistance(string user, string guincho)
         {
             string routeUrl = $"http://router.project-osrm.org/route/v1/driving/{user};{guincho}?overview=false";

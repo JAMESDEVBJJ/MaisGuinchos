@@ -166,6 +166,8 @@ namespace MaisGuinchos.Services
 
                 DriverId = entity.DriverId,
                 DriverName = entity.Driver.Name ?? string.Empty,
+                driverPhone = entity.Driver.NumeroTelefone ?? string.Empty,
+                driverTow = entity.Driver.Guincho?.Modelo ?? string.Empty,
 
                 ClientId = entity.TowRequest.ClientId,
                 ClientName = entity.TowRequest.Client.Name ?? string.Empty,

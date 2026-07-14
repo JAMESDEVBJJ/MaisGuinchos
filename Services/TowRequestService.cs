@@ -39,6 +39,20 @@ namespace MaisGuinchos.Services
             if (exists)
                 throw new BusinessException("Já existe uma solicitação ativa para este motorista.");
 
+            string pickupAddress;
+            string dropoffAddress;
+
+            try
+            {
+                pickupAddress = await _locationService.GetAddressAsync(dto.PickupLat, dto.PickupLon);
+                dropoffAddress = await _locationService.GetAddressAsync(dto.DropoffLat, dto.DropoffLon);
+            }
+            catch
+            {
+                pickupAddress = $"{dto.PickupLat:F6}, {dto.PickupLon:F6}";
+                dropoffAddress = $"{dto.DropoffLat:F6}, {dto.DropoffLon:F6}";
+            }            
+
             var request = new Models.TowRequest
             {
                 Id = Guid.NewGuid(),
@@ -46,8 +60,10 @@ namespace MaisGuinchos.Services
                 DriverId = dto.DriverId,
                 PickupLat = dto.PickupLat,
                 PickupLon = dto.PickupLon,
+                PickupAddress = pickupAddress,
                 DropoffLat = dto.DropoffLat,
                 DropoffLon = dto.DropoffLon,
+                DropoffAddress = dropoffAddress,
                 TotalDistanceKm = dto.TotalDistanceKm,
                 DistanceToDestinationKm = dto.DistanceToDestinationKm,
                 DistanceToPickupKm = dto.DistanceToPickupKm,

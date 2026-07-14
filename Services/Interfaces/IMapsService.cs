@@ -7,6 +7,8 @@ namespace MaisGuinchos.Services.Interfaces
     public interface IMapsService
     {
         public Task<List<NominatimReturnDTO>?> GetCordsFromAddress(AddressDTO address);
+
+        public Task<string> GetAddressAsync(double lat, double lon);
         public Task<RouteDTO>? GetRouteDistance(string user, string guincho);
 
         public Task<CalculateRouteReturnDTO?> GetRoute(
@@ -16,6 +18,8 @@ namespace MaisGuinchos.Services.Interfaces
             double? destLon);
 
         Task<Location?> GetLastLocationAsync(Guid userId);
+
+
 
     }
 }

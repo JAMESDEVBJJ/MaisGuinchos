@@ -52,6 +52,7 @@ namespace MaisGuinchos.Repositorys
                 .Where(tr => tr.ClientId == userId)
                 .Include(x => x.Driver)
                 .Include(x => x.Client)
+                .OrderByDescending(x => x.CreatedAt)
                 .ToListAsync();
         }
 
