@@ -46,6 +46,16 @@ namespace MaisGuinchos.Repositorys
             await _appDbContext.SaveChangesAsync();
         }
 
+        public async Task<List<TowRequest>> GetByUserIdAsync(Guid userId)
+        {
+            return await _appDbContext.TowRequests
+                .Where(tr => tr.ClientId == userId)
+                .Include(x => x.Driver)
+                .Include(x => x.Client)
+                .OrderByDescending(x => x.CreatedAt)
+                .ToListAsync();
+        }
+
         public async Task<List<TowRequest>> GetPendingsAsync(Guid driverId)
         {
             return await _appDbContext.TowRequests

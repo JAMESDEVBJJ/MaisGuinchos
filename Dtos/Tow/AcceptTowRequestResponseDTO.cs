@@ -80,5 +80,7 @@ namespace MaisGuinchos.Dtos.Tow
         public TowGuinchoDTO Truck { get; set; }
 
         public string DriverPhone { get; set; }
+
+        public string DriverName { get; set; }
     }
 }

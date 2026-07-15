@@ -9,6 +9,8 @@ namespace MaisGuinchos.Services.Interfaces
     {
         public Task<TowTravel?> GetActiveByDriverId(Guid driverId);
         public Task<TowTravel?> GetActiveByClientId(Guid clientId);
+        
+        public Task<List<TowTravelHistoryResponseDTO>> GetAllByUserId(Guid userId);
         public CoordinateDto? ResolveTarget(TowTravel travel);
         public Task<TowTravelResponseDTO?> GetPendingTowTravel(Guid userId);
 

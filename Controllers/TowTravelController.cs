@@ -7,13 +7,26 @@ namespace MaisGuinchos.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class TowTravelController: ControllerBase
+    public class TowTravelController : ControllerBase
     {
         private readonly ITravelService _towTravelService;
 
         public TowTravelController(ITravelService travelService)
         {
             _towTravelService = travelService;
+        }
+
+        [Route("{userId}/all")]
+        [HttpGet]
+        public async Task<IActionResult> GetTowsTravelsByUserId(Guid userId)
+        {
+            if (userId == Guid.Empty)
+            {
+                return BadRequest("ID do usuário é inválido.");
+            }
+
+            var towTravels = await _towTravelService.GetAllByUserId(userId);
+            return Ok(towTravels);
         }
 
         [Route("pending")]

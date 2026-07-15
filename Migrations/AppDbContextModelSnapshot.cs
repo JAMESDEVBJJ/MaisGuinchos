@@ -138,6 +138,10 @@ namespace MaisGuinchos.Migrations
                     b.Property<Guid>("DriverId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("DropoffAddress")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<double>("DropoffLat")
                         .HasColumnType("double precision");
 
@@ -159,6 +163,10 @@ namespace MaisGuinchos.Migrations
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
+
+                    b.Property<string>("PickupAddress")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<double>("PickupLat")
                         .HasColumnType("double precision");

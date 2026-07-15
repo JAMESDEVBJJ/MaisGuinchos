@@ -22,6 +22,10 @@ namespace MaisGuinchos.Models
         [Range(-180, 180)]
         public double PickupLon { get; set; }
 
+
+        [Required]
+        public string PickupAddress { get; set; } = string.Empty;
+
         [Required]
         [Range(-90, 90)]
         public double DropoffLat { get; set; }
@@ -29,6 +33,9 @@ namespace MaisGuinchos.Models
         [Required]
         [Range(-180, 180)]
         public double DropoffLon { get; set; }
+
+        [Required]
+        public string DropoffAddress { get; set; } = string.Empty;
 
         [Range(0, double.MaxValue)]
         public double? DistanceToPickupKm { get; set; }

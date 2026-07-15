@@ -1,4 +1,5 @@
 ﻿using MaisGuinchos.Dtos;
+using MaisGuinchos.Dtos.Guincho;
 using MaisGuinchos.Dtos.Route;
 using MaisGuinchos.Dtos.Tow.Travel;
 using MaisGuinchos.Exceptions;
@@ -23,14 +24,23 @@ namespace MaisGuinchos.Services
             _hubContext = hubContext;
         }
 
-        public Task<TowTravel?> GetActiveByDriverId(Guid driverId)
+        public async Task<TowTravel?> GetActiveByDriverId(Guid driverId)
         {
-            return _towTravelRepo.GetLastActiveByDriverId(driverId);
+            return await _towTravelRepo.GetLastActiveByDriverId(driverId);
         }
 
-        public Task<TowTravel?> GetActiveByClientId(Guid clientId)
+        public async Task<List<TowTravelHistoryResponseDTO>> GetAllByUserId(Guid userId)
         {
-            return _towTravelRepo.GetActiveByClientId(clientId);
+            var travels = await _towTravelRepo.GetAllByUserId(userId);
+
+            return travels
+                .Select(ToHistoryDto)
+                .ToList();
+        }
+
+        public async Task<TowTravel?> GetActiveByClientId(Guid clientId)
+        {
+            return await _towTravelRepo.GetActiveByClientId(clientId);
         }
 
         public CoordinateDto? ResolveTarget(TowTravel travel)
@@ -143,6 +153,40 @@ namespace MaisGuinchos.Services
                     Plate = entity.Driver.Guincho.Placa!
                 },
                 DriverPhoto = entity.Driver.Guincho.Foto ?? string.Empty,
+            };
+        }
+
+        public TowTravelHistoryResponseDTO ToHistoryDto(TowTravel entity)
+        {
+            return new TowTravelHistoryResponseDTO
+            {
+                Id = entity.Id,
+
+                TowRequestId = entity.TowRequestId,
+
+                DriverId = entity.DriverId,
+                DriverName = entity.Driver.Name ?? string.Empty,
+                driverPhone = entity.Driver.NumeroTelefone ?? string.Empty,
+                driverTow = entity.Driver.Guincho?.Modelo ?? string.Empty,
+
+                ClientId = entity.TowRequest.ClientId,
+                ClientName = entity.TowRequest.Client.Name ?? string.Empty,
+
+                FinalPrice = entity.FinalPrice,
+
+                DistanceToPickupKm = entity.DistanceToPickupKm,
+                TimeToPickupMin = entity.DurationMinToPickup,
+
+                DistanceToDestinationKm = entity.DistanceToDestinationKm,
+                TimeToDestinationMin = entity.DurationMinToDestination,
+
+                Status = entity.Status,
+
+                StartedAt = entity.StartedAt,
+                EndedAt = entity.EndedAt,
+                CanceledAt = entity.CanceledAt,
+
+                CancellationReason = entity.CancellationReason ?? string.Empty
             };
         }
 

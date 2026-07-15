@@ -39,6 +39,20 @@ namespace MaisGuinchos.Services
             if (exists)
                 throw new BusinessException("Já existe uma solicitação ativa para este motorista.");
 
+            string pickupAddress;
+            string dropoffAddress;
+
+            try
+            {
+                pickupAddress = await _locationService.GetAddressAsync(dto.PickupLat, dto.PickupLon);
+                dropoffAddress = await _locationService.GetAddressAsync(dto.DropoffLat, dto.DropoffLon);
+            }
+            catch
+            {
+                pickupAddress = $"{dto.PickupLat:F6}, {dto.PickupLon:F6}";
+                dropoffAddress = $"{dto.DropoffLat:F6}, {dto.DropoffLon:F6}";
+            }            
+
             var request = new Models.TowRequest
             {
                 Id = Guid.NewGuid(),
@@ -46,8 +60,10 @@ namespace MaisGuinchos.Services
                 DriverId = dto.DriverId,
                 PickupLat = dto.PickupLat,
                 PickupLon = dto.PickupLon,
+                PickupAddress = pickupAddress,
                 DropoffLat = dto.DropoffLat,
                 DropoffLon = dto.DropoffLon,
+                DropoffAddress = dropoffAddress,
                 TotalDistanceKm = dto.TotalDistanceKm,
                 DistanceToDestinationKm = dto.DistanceToDestinationKm,
                 DistanceToPickupKm = dto.DistanceToPickupKm,
@@ -100,6 +116,58 @@ namespace MaisGuinchos.Services
         {
             var request = await _towRequestRepo.GetByIdAsync(towRequestId);
             return request ?? throw new Exception("Tow request not found");
+        }
+
+        public async Task<List<GetTowsRequestsByUserIdDTO>> GetTowsRequestsByUserId(Guid userId)
+        {
+            var tows = await _towRequestRepo.GetByUserIdAsync(userId);
+
+            if (tows == null || !tows.Any())
+                return new List<GetTowsRequestsByUserIdDTO>();
+
+            var result = tows.Select(t => new GetTowsRequestsByUserIdDTO
+            {
+                Id = t.Id,
+
+                ClientId = t.ClientId,
+                ClientName = t.Client.Name,
+
+                DriverId = t.DriverId,
+                DriverName = t.Driver.Name,
+
+                PickupLat = t.PickupLat,
+                PickupLon = t.PickupLon,
+
+                DropoffLat = t.DropoffLat,
+                DropoffLon = t.DropoffLon,
+
+                DistanceToPickupKm = t.DistanceToPickupKm,
+                DistanceToDestinationKm = t.DistanceToDestinationKm,
+                TotalDistanceKm = t.TotalDistanceKm,
+
+                DurationMinToPickup = t.DurationMinToPickup,
+                DurationMinToDestination = t.DurationMinToDestination,
+                DurationMinutes = t.DurationMinutes,
+
+                SuggestedPrice = t.SuggestedPrice,
+                FinalPrice = t.FinalPrice,
+
+                VehicleType = t.VehicleType,
+                VehicleIssue = t.VehicleIssue,
+                Notes = t.Notes,
+
+                CounterOfferPrice = t.CounterOfferPrice,
+                CounterOfferPercent = t.CounterOfferPercent,
+                CounterOfferReason = t.CounterOfferReason,
+                CounterOfferAt = t.CounterOfferAt,
+
+                Status = t.Status,
+
+                CreatedAt = t.CreatedAt,
+                UpdatedAt = t.UpdatedAt
+            }).ToList();
+
+            return result;
         }
 
         public async Task<List<GetTowsPendingsDTO>> GetTowsPendings(Guid driverId)
@@ -357,6 +425,7 @@ namespace MaisGuinchos.Services
                 },
                 VehicleModel = towRequest.VehicleType ?? "Modelo desconhecido",
                 DriverPhotoUrl = guincho.Foto,
+                DriverName = towRequest.Driver.Name,
                 DriverPhone = towRequest.Driver.NumeroTelefone
             };
 
@@ -444,6 +513,7 @@ namespace MaisGuinchos.Services
                 },
                 VehicleModel = towRequest.VehicleType ?? "Modelo desconhecido",
                 DriverPhotoUrl = guincho.Foto,
+                DriverName = towRequest.Driver.Name,
                 DriverPhone = towRequest.Driver.NumeroTelefone
             };
 
