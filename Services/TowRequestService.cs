@@ -46,6 +46,8 @@ namespace MaisGuinchos.Services
             {
                 pickupAddress = await _locationService.GetAddressAsync(dto.PickupLat, dto.PickupLon);
                 dropoffAddress = await _locationService.GetAddressAsync(dto.DropoffLat, dto.DropoffLon);
+
+
             }
             catch
             {
@@ -94,8 +96,10 @@ namespace MaisGuinchos.Services
                 Status = request.Status,
                 ClientName = clientName,
                 DriverName = driverName,
+                PickupAddress = request.PickupAddress,
                 PickupLat = request.PickupLat,
                 PickupLon = request.PickupLon,
+                DropoffAddress = request.DropoffAddress,
                 DropoffLat = request.DropoffLat,
                 DropoffLon = request.DropoffLon,
                 TotalDistanceKm = request.TotalDistanceKm,
@@ -135,9 +139,11 @@ namespace MaisGuinchos.Services
                 DriverId = t.DriverId,
                 DriverName = t.Driver.Name,
 
+                PickupAddress = t.PickupAddress,
                 PickupLat = t.PickupLat,
                 PickupLon = t.PickupLon,
-
+                
+                DropoffAddress = t.DropoffAddress,
                 DropoffLat = t.DropoffLat,
                 DropoffLon = t.DropoffLon,
 
@@ -184,6 +190,7 @@ namespace MaisGuinchos.Services
                 ClientId = t.ClientId,
                 PickupLat = t.PickupLat,
                 PickupLon = t.PickupLon,
+                PickupAddress = t.PickupAddress,
                 DropoffLat = t.DropoffLat,
                 DropoffLon = t.DropoffLon,
                 TotalDistanceKm = t.TotalDistanceKm,

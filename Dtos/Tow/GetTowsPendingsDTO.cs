@@ -15,9 +15,11 @@ namespace MaisGuinchos.Dtos.Tow
 
         public Guid DriverId { get; set; }
 
+        public string PickupAddress { get; set; }
         public double PickupLat { get; set; }
         public double PickupLon { get; set; }
 
+        public string DropoffAddress { get; set; }
         public double DropoffLat { get; set; }
         public double DropoffLon { get; set; }
 

@@ -5,6 +5,7 @@ using MaisGuinchos.Models;
 using MaisGuinchos.Repositorys.Interfaces;
 using MaisGuinchos.Services.Interfaces;
 using System.Globalization;
+using System.Net;
 using System.Text.Json;
 
 namespace MaisGuinchos.Services
@@ -46,6 +47,22 @@ namespace MaisGuinchos.Services
             var content = await response.Content.ReadAsStringAsync();
 
             var nominatimReturn = JsonSerializer.Deserialize<NominatimReturnDTO>(content);
+
+            var address = nominatimReturn?.address;
+
+            var local =
+                address?.City ??
+                address?.Town ??
+                address?.Village ??
+                address?.Hamlet ??
+                address?.Suburb ??
+                address?.Neighbourhood;
+
+            if (!string.IsNullOrWhiteSpace(local) &&
+                !string.IsNullOrWhiteSpace(address?.State))
+            {
+                return $"{local} - {address.State}";
+            }
 
             return nominatimReturn?.display_name ?? "Endereço não encontrado";
         }
