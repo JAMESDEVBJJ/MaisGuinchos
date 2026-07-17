@@ -4,9 +4,6 @@ obj/
 *.cache
 *.log
 
-# Ef Core
-Migrations/
-
 # VS Code
 .vscode/
 
