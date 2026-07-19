@@ -49,7 +49,7 @@ namespace MaisGuinchos.Repositorys
         public async Task<List<TowRequest>> GetByUserIdAsync(Guid userId)
         {
             return await _appDbContext.TowRequests
-                .Where(tr => tr.ClientId == userId)
+                .Where(tr => tr.ClientId == userId || tr.DriverId == userId)
                 .Include(x => x.Driver)
                 .Include(x => x.Client)
                 .OrderByDescending(x => x.CreatedAt)
