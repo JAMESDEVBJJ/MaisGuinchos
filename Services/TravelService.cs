@@ -166,8 +166,12 @@ namespace MaisGuinchos.Services
 
                 DriverId = entity.DriverId,
                 DriverName = entity.Driver.Name ?? string.Empty,
-                driverPhone = entity.Driver.NumeroTelefone ?? string.Empty,
-                driverTow = entity.Driver.Guincho?.Modelo ?? string.Empty,
+                DriverPhone = entity.Driver.NumeroTelefone ?? string.Empty,
+                DriverTowModel = entity.Driver.Guincho?.Modelo ?? string.Empty,
+                DriverTowPlate = entity.Driver.Guincho?.Placa ?? string.Empty,
+
+                OriginAddress = entity.TowRequest.PickupAddress ?? string.Empty,
+                DestinationAddress = entity.TowRequest.DropoffAddress ?? string.Empty,
 
                 ClientId = entity.TowRequest.ClientId,
                 ClientName = entity.TowRequest.Client.Name ?? string.Empty,

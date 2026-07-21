@@ -11,9 +11,14 @@ namespace MaisGuinchos.Dtos.Tow.Travel
         public Guid DriverId { get; set; }
         public string DriverName { get; set; } = string.Empty;
 
-        public string driverPhone { get; set; } = string.Empty;
+        public string DriverPhone { get; set; } = string.Empty;
 
-        public string driverTow { get; set; }
+        public string DriverTowModel { get; set; } = string.Empty;
+        public string DriverTowPlate { get; set; } = string.Empty;
+
+        public string OriginAddress { get; set; } = string.Empty;
+
+        public string DestinationAddress { get; set; } = string.Empty;
 
         public Guid ClientId { get; set; }
         public string ClientName { get; set; } = string.Empty;
