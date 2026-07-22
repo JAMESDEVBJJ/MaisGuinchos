@@ -67,6 +67,28 @@ namespace MaisGuinchos.Services
             return user;
         }
 
+        public async Task<UserProfileResponseDTO> GetUserProfileById(Guid id)
+        {
+            var user = await _userRepo.GetUserById(id);
+
+            if (user == null)
+            {
+                throw new NotFoundException("User");
+            }
+
+            return new UserProfileResponseDTO
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Cpf = user.Cpf,
+                Name = user.Name,
+                Estrelas = user.Estrelas,
+                NumeroTelefone = user.NumeroTelefone,
+                Tipo = ((UserType)user.Tipo).ToString(),
+                UserName = user.UserName
+            };
+        }
+
         public async Task<UserAddedDTO?> AddUser(CreateUserDTO user)
         {
             var userExists = await _userRepo.GetUserByEmail(user.Email);
