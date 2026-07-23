@@ -73,7 +73,30 @@ namespace MaisGuinchos.Services
 
             if (user == null)
             {
-                throw new NotFoundException("User");
+                throw new NotFoundException("User not found");
+            }
+
+            if (user.Tipo == User.UserType.Motorista && user.Guincho != null)
+            {
+                return new UserProfileResponseDTO
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    Cpf = user.Cpf,
+                    Name = user.Name,
+                    Estrelas = user.Estrelas,
+                    NumeroTelefone = user.NumeroTelefone,
+                    Tipo = ((UserType)user.Tipo).ToString(),
+                    UserName = user.UserName,
+                    Guincho = new Dtos.Guincho.TowGuinchoDTO
+                    {
+                        Id = user.Guincho.Id,
+                        Model = user.Guincho.Modelo,
+                        Color = user.Guincho.Cor,
+                        Plate = user.Guincho.Placa,
+                        Photo = user.Guincho.Foto
+                    }
+                };
             }
 
             return new UserProfileResponseDTO
@@ -218,7 +241,7 @@ namespace MaisGuinchos.Services
             };
         }
 
-        public async Task<User> UpdateUser(UpdUserDto userUpd, Guid id)
+        public async Task<UpdateUserProfileResponseDTO> UpdateUserProfile(UpdateUserProfileDTO userUpd, Guid id)
         {
             var user = await _userRepo.GetUserById(id);
 
@@ -229,21 +252,7 @@ namespace MaisGuinchos.Services
 
             user.Name = userUpd.Name ?? user.Name;
             user.UserName = userUpd.UserName ?? user.UserName;
-
-            if (userUpd.Cpf != null && userUpd.Cpf != user.Cpf)
-            {
-                var exist = await _userRepo.GetUserByCpf(userUpd.Cpf);
-
-                if (exist != null)
-                {
-                    throw new Exception("User with this CPF already exist.");
-                }
-
-                user.Cpf = userUpd.Cpf;
-            }
-
             user.NumeroTelefone = userUpd.NumeroTelefone ?? user.NumeroTelefone;
-            user.Password = userUpd.Password != null ? _hasherUtil.Hasher(userUpd.Password) : user.Password;
 
             if (userUpd.Email != null && userUpd.Email != user.Email)
             {
@@ -251,16 +260,26 @@ namespace MaisGuinchos.Services
 
                 if (exist != null)
                 {
-                    throw new Exception("User with this email already exist.");
-
+                    throw new Exception(
+                        "User with this email already exist."
+                    );
                 }
 
                 user.Email = userUpd.Email;
             }
+                
+            var userUpdated = await _userRepo.UpdateUser(user);
 
-            await _userRepo.Save();
-
-            return await _userRepo.GetUserById(id);
+            return new UpdateUserProfileResponseDTO
+            {
+                Id = user.Id,
+                Name = user.Name,
+                UserName = user.UserName,
+                Email = user.Email,
+                NumeroTelefone = user.NumeroTelefone,
+                Cpf = user.Cpf,
+                Tipo = user.Tipo.ToString()
+            };
         }
 
         public async Task<UpdLocationResponseDTO> UpdateLocation(Guid id, AddressDTO address, ClaimsPrincipal userClaims)

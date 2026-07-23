@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using MaisGuinchos.Dtos.Guincho;
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 public class UserProfileResponseDTO
 {
@@ -17,6 +19,8 @@ public class UserProfileResponseDTO
     public string Tipo { get; set; }
 
     public double Estrelas { get; set; }
+
+    public TowGuinchoDTO? Guincho { get; set; }
 }
 
 public enum UserType

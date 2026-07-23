@@ -25,9 +25,9 @@ namespace MaisGuinchos.Repositorys
             return users;
         }
 
-        public async Task<User> GetUserById(Guid id)
+        public async Task<User?> GetUserById(Guid id)
         {
-            var user = _dbContext.Users.FirstOrDefault(u => u.Id == id);
+            var user = _dbContext.Users.Include(u => u.Guincho).FirstOrDefault(u => u.Id == id);
 
             return user;
         }   
@@ -107,6 +107,13 @@ namespace MaisGuinchos.Repositorys
             _dbContext.Users.Add(user);
             _dbContext.SaveChanges();
 
+            return user;
+        }
+
+        public async Task<User> UpdateUser(User user)
+        {
+            _dbContext.Users.Update(user);
+            _dbContext.SaveChanges();
             return user;
         }
 

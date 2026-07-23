@@ -9,5 +9,7 @@
         public string Color { get; set; }
 
         public string Plate { get; set; }
+
+        public string? Photo { get; set; }
     }
 }

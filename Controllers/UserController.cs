@@ -114,12 +114,22 @@ namespace MaisGuinchos.Controllers
             var token = await _userService.LoginUser(userLogin);
 
             return Ok(token);
-        } 
+        }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser([FromBody] UpdUserDto userUpd, [FromRoute] Guid id)
+        [Authorize]
+        [HttpPut("profile")]
+        public async Task<IActionResult> UpdateUser( [FromBody] UpdateUserProfileDTO userUpd)
         {
-            var updatedUser = await _userService.UpdateUser(userUpd, id);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userIdClaim == null)
+            {
+                return Unauthorized();
+            }
+
+            var userId = Guid.Parse(userIdClaim);
+
+            var updatedUser = await _userService.UpdateUserProfile(userUpd, userId);
 
             return Ok(updatedUser);
         }
