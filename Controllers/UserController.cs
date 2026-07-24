@@ -52,7 +52,7 @@ namespace MaisGuinchos.Controllers
                 return Unauthorized("Id do usuário não encontrado.");
             }
 
-            var motoristas = await _userService.BuscarMotoristasProximos(userId, limit);
+            var motoristas = await _userService.BuscarMotoristasProximos(Guid.Parse(userId), limit);
 
             if (!motoristas.Any())
             {
@@ -60,6 +60,27 @@ namespace MaisGuinchos.Controllers
             }
 
             return Ok(motoristas);
+        }
+
+        [Authorize]
+        [HttpGet("driver/{driverId:guid}")]
+        public async Task<IActionResult> GetGuinchoByDriverId(Guid driverId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userId == null)
+            {
+                return Unauthorized("Id do usuário não encontrado.");
+            }
+
+            var guincho = await _userService.GetMotoristaProxById(Guid.Parse(userId), driverId);
+
+            if (guincho == null)
+            {
+                return NotFound("Não foi possível encontrar o motorista.");
+            }
+
+            return Ok(guincho);
         }
 
 

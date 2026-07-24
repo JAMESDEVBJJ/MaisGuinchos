@@ -158,10 +158,11 @@ namespace MaisGuinchos.Services
                         Foto = photoUrl
                     };
 
-                } else
+                }
+                else
                 {
                     throw new Exception("Guincho obrigatório para motorista.");
-                } 
+                }
             }
 
 
@@ -178,7 +179,7 @@ namespace MaisGuinchos.Services
                     Tipo = (UserAddedDTO.UserType)userAdded.Tipo
                 };
 
-                if(userAdded.Guincho != null)
+                if (userAdded.Guincho != null)
                 {
                     userDTO.Guincho = new CreateGuinchoRequest
                     {
@@ -267,7 +268,7 @@ namespace MaisGuinchos.Services
 
                 user.Email = userUpd.Email;
             }
-                
+
             var userUpdated = await _userRepo.UpdateUser(user);
 
             return new UpdateUserProfileResponseDTO
@@ -346,7 +347,7 @@ namespace MaisGuinchos.Services
 
             var travel = await _travelService.GetActiveByDriverId(driverId);
 
-            if (travel != null && 
+            if (travel != null &&
                 (travel.Status == TowTravelStatus.InProgress || travel.Status == TowTravelStatus.GoingToClient))
             {
                 var target = _travelService.ResolveTarget(travel);
@@ -426,14 +427,14 @@ namespace MaisGuinchos.Services
                 .SendAsync("DriverLocationUpdated", route);
         }
 
-        public async Task<List<MotoristaProxDTO?>> BuscarMotoristasProximos(string userId, int? limit = null)
+        public async Task<List<MotoristaProxDTO?>> BuscarMotoristasProximos(Guid userId, int? limit = null)
         {
-            if (!Guid.TryParse(userId, out var userGuid))
+            if (userId == Guid.Empty)
             {
                 throw new ArgumentException("UserId invalid.");
             }
 
-            var userLocation = await _locationRepo.GetLastFromUser(userGuid);
+            var userLocation = await _locationRepo.GetLastFromUser(userId);
 
             if (userLocation == null)
             {
@@ -443,6 +444,32 @@ namespace MaisGuinchos.Services
             var guinchosProximos = await _userRepo.GetMotoristasProximos(userLocation);
 
             return guinchosProximos!;
+        }
+
+        public async Task<MotoristaProxDTO?> GetMotoristaProxById(
+            Guid userId,
+            Guid id)
+        {
+            var userLocation = await _locationRepo.GetLastFromUser(userId);
+
+            if (userLocation == null)
+            {
+                throw new NotFoundException("User location not found.");
+            }
+
+            var motorista = await _userRepo.GetMotoristaById(id, userLocation.Latitude, userLocation.Longitude);
+
+            if (motorista == null)
+            {
+                throw new NotFoundException("Motorista not found.");
+            }
+
+            if (!motorista.Available)
+            {
+                throw new BusinessException("Motorista não está disponível.");
+            }
+
+            return motorista;
         }
     }
 }

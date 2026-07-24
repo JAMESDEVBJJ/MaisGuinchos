@@ -21,6 +21,8 @@ namespace MaisGuinchos.Services.Interfaces
 
         public Task<UpdLocationResponseDTO> UpdateLocation(Guid id, AddressDTO address, ClaimsPrincipal userClaims);
 
-        public Task<List<MotoristaProxDTO?>> BuscarMotoristasProximos(string userId, int? limit = null);
+        public Task<List<MotoristaProxDTO?>> BuscarMotoristasProximos(Guid userId, int? limit = null);
+
+        public Task<MotoristaProxDTO?> GetMotoristaProxById(Guid userId, Guid id);
     }
 }
