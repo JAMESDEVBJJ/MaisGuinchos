@@ -1,4 +1,6 @@
-﻿namespace MaisGuinchos.Dtos.User
+﻿using MaisGuinchos.Dtos.Guincho;
+
+namespace MaisGuinchos.Dtos.User
 {
     public class UpdateUserProfileResponseDTO
     {
@@ -15,5 +17,7 @@
         public string Cpf { get; set; } = string.Empty;
 
         public string Tipo { get; set; } = string.Empty;
+
+        public TowGuinchoDTO? Guincho { get; set; }
     }
 }

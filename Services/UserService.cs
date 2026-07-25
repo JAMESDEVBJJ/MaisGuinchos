@@ -251,11 +251,22 @@ namespace MaisGuinchos.Services
                 throw new NotFoundException("User");
             }
 
-            user.Name = userUpd.Name ?? user.Name;
-            user.UserName = userUpd.UserName ?? user.UserName;
-            user.NumeroTelefone = userUpd.NumeroTelefone ?? user.NumeroTelefone;
+            if (!string.IsNullOrWhiteSpace(userUpd.Name))
+            {
+                user.Name = userUpd.Name;
+            }
 
-            if (userUpd.Email != null && userUpd.Email != user.Email)
+            if (!string.IsNullOrWhiteSpace(userUpd.UserName))
+            {
+                user.UserName = userUpd.UserName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(userUpd.NumeroTelefone))
+            {
+                user.NumeroTelefone = userUpd.NumeroTelefone;
+            }
+
+            if (!string.IsNullOrWhiteSpace(userUpd.NumeroTelefone) && userUpd.Email != user.Email)
             {
                 var exist = await _userRepo.GetUserByEmail(userUpd.Email);
 
@@ -269,6 +280,21 @@ namespace MaisGuinchos.Services
                 user.Email = userUpd.Email;
             }
 
+            if (user.Tipo == User.UserType.Motorista)
+            {
+                if (userUpd.Photo != null)
+                {
+                    var photoUrl = await SavePhotoAsync(userUpd.Photo);
+                    user.Guincho!.Foto = photoUrl;
+                }
+                if (userUpd.Guincho != null)
+                {
+                    user.Guincho!.Modelo = userUpd.Guincho.Model ?? user.Guincho.Modelo;
+                    user.Guincho!.Cor = userUpd.Guincho.Color ?? user.Guincho.Cor;
+                    user.Guincho!.Placa = userUpd.Guincho.Plate ?? user.Guincho.Placa;
+                }
+            }
+
             var userUpdated = await _userRepo.UpdateUser(user);
 
             return new UpdateUserProfileResponseDTO
@@ -279,7 +305,15 @@ namespace MaisGuinchos.Services
                 Email = user.Email,
                 NumeroTelefone = user.NumeroTelefone,
                 Cpf = user.Cpf,
-                Tipo = user.Tipo.ToString()
+                Tipo = user.Tipo.ToString(),
+                Guincho = user.Guincho != null ? new Dtos.Guincho.TowGuinchoDTO
+                {
+                    Id = user.Guincho.Id,
+                    Model = user.Guincho.Modelo,
+                    Color = user.Guincho.Cor,
+                    Plate = user.Guincho.Placa,
+                    Photo = user.Guincho.Foto
+                } : null,
             };
         }
 
@@ -338,6 +372,36 @@ namespace MaisGuinchos.Services
             }
 
             return locationReturn;
+        }
+
+        public async Task UpdatePassword(UpdatePasswordDTO dto, Guid userId)
+        {
+            if (dto.NewPassword != dto.ConfirmPassword)
+            {
+                throw new BadRequestException("A nova senha e a confirmação não coincidem.");
+            }
+
+            var user = await _userRepo.GetUserById(userId);
+
+            if (user == null)
+            {
+                throw new NotFoundException("User");
+            }
+
+            var passwordValid = _hasherUtil.Verify(
+                dto.CurrentPassword,
+                user.Password
+            );
+
+            if (!passwordValid)
+            {
+                throw new BadRequestException("A senha atual está incorreta.");
+            }
+
+
+            user.Password = _hasherUtil.Hasher(dto.NewPassword);
+
+            await _userRepo.UpdateUser(user);
         }
 
         private async Task HandleRealtimeTravelTracking(Guid driverId, Location updatedLocation)

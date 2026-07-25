@@ -121,7 +121,7 @@ namespace MaisGuinchos.Controllers
             }
 
             return CreatedAtAction(nameof(GetUserById), userAdd);
-            
+
         }
 
         [HttpPost("login")]
@@ -139,7 +139,7 @@ namespace MaisGuinchos.Controllers
 
         [Authorize]
         [HttpPut("profile")]
-        public async Task<IActionResult> UpdateUser( [FromBody] UpdateUserProfileDTO userUpd)
+        public async Task<IActionResult> UpdateUser([FromForm] UpdateUserProfileDTO userUpd)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -159,7 +159,7 @@ namespace MaisGuinchos.Controllers
         [Authorize(Roles = "Cliente,Motorista")]
         public async Task<IActionResult> UpdateLocation([FromBody] AddressDTO address)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);    
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (userId == null)
             {
@@ -171,6 +171,24 @@ namespace MaisGuinchos.Controllers
             var updatedLocation = await _userService.UpdateLocation(userGuid, address, User);
 
             return Ok(updatedLocation);
+        }
+
+        [Authorize]
+        [HttpPut("password")]
+        public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordDTO dto)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null)
+            {
+                return Unauthorized();
+            }
+
+            await _userService.UpdatePassword(dto, Guid.Parse(userIdClaim));
+
+            return Ok(new
+            {
+                message = "Senha atualizada com sucesso."
+            });
         }
     }
 }

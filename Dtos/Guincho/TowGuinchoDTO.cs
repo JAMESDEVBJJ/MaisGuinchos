@@ -4,11 +4,11 @@
     {
         public Guid Id { get; set; }
 
-        public string Model { get; set; }
+        public string Model { get; set; } = string.Empty;
 
-        public string Color { get; set; }
+        public string Color { get; set; } = string.Empty;
 
-        public string Plate { get; set; }
+        public string Plate { get; set; } = string.Empty; 
 
         public string? Photo { get; set; }
     }
