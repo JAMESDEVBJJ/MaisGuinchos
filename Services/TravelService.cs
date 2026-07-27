@@ -1,11 +1,14 @@
 ﻿using MaisGuinchos.Dtos;
+using MaisGuinchos.Dtos.Guincho;
 using MaisGuinchos.Dtos.Route;
 using MaisGuinchos.Dtos.Tow.Travel;
 using MaisGuinchos.Exceptions;
+using MaisGuinchos.Hubs;
 using MaisGuinchos.Models;
 using MaisGuinchos.Repositorys.Interfaces;
 using MaisGuinchos.Services.Interfaces;
-using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.SignalR;
 
 namespace MaisGuinchos.Services
 {
@@ -13,21 +16,39 @@ namespace MaisGuinchos.Services
     {
         private readonly ITowTravelRepo _towTravelRepo;
         private readonly IMapsService _mapsService;
+        private readonly IHubContext<TowHub> _hubContext;
 
-        public TravelService(ITowTravelRepo towTravelRepo, IMapsService mapsService)
+        public TravelService(ITowTravelRepo towTravelRepo, IMapsService mapsService, IHubContext<TowHub> hubContext)
         {
             _towTravelRepo = towTravelRepo;
             _mapsService = mapsService;
+            _hubContext = hubContext;
         }
 
-        public Task<TowTravel?> GetActiveByDriverId(Guid driverId)
+        public async Task<TowTravel?> GetActiveByDriverId(Guid driverId)
         {
-            return _towTravelRepo.GetLastActiveByDriverId(driverId);
+            return await _towTravelRepo.GetLastActiveByDriverId(driverId);
         }
 
-        public Task<TowTravel?> GetActiveByClientId(Guid clientId)
+        public async Task<PaginatedResponse<TowTravelHistoryResponseDTO>> GetAllByUserId(Guid userId, int page, int pageSize)
         {
-            return _towTravelRepo.GetActiveByClientId(clientId);
+            var travels = await _towTravelRepo.GetAllByUserIdPaginated(userId, page, pageSize);
+
+            var totalItems = await _towTravelRepo.GetTotalCountByUserId(userId);
+
+            return new PaginatedResponse<TowTravelHistoryResponseDTO>
+            {
+                Items = travels.Select(ToHistoryDto).ToList(),
+                Page = page,
+                PageSize = pageSize,
+                TotalItems = totalItems,
+                TotalPages = (int)Math.Ceiling((double)totalItems / pageSize)
+            };
+        }
+
+        public async Task<TowTravel?> GetActiveByClientId(Guid clientId)
+        {
+            return await _towTravelRepo.GetActiveByClientId(clientId);
         }
 
         public CoordinateDto? ResolveTarget(TowTravel travel)
@@ -130,7 +151,54 @@ namespace MaisGuinchos.Services
                     Latitude = entity.TowRequest.DropoffLat,
                     Longitude = entity.TowRequest.DropoffLon,
                     Address = string.Empty
-                }
+                },
+
+                Truck = new Dtos.Guincho.TowGuinchoDTO
+                {
+                    Id = entity.Driver.Guincho!.Id,
+                    Model = entity.Driver.Guincho.Modelo!,
+                    Color = entity.Driver.Guincho.Cor!,
+                    Plate = entity.Driver.Guincho.Placa!
+                },
+                DriverPhoto = entity.Driver.Guincho.Foto ?? string.Empty,
+            };
+        }
+
+        public TowTravelHistoryResponseDTO ToHistoryDto(TowTravel entity)
+        {
+            return new TowTravelHistoryResponseDTO
+            {
+                Id = entity.Id,
+
+                TowRequestId = entity.TowRequestId,
+
+                DriverId = entity.DriverId,
+                DriverName = entity.Driver.Name ?? string.Empty,
+                DriverPhone = entity.Driver.NumeroTelefone ?? string.Empty,
+                DriverTowModel = entity.Driver.Guincho?.Modelo ?? string.Empty,
+                DriverTowPlate = entity.Driver.Guincho?.Placa ?? string.Empty,
+
+                OriginAddress = entity.TowRequest.PickupAddress ?? string.Empty,
+                DestinationAddress = entity.TowRequest.DropoffAddress ?? string.Empty,
+
+                ClientId = entity.TowRequest.ClientId,
+                ClientName = entity.TowRequest.Client.Name ?? string.Empty,
+
+                FinalPrice = entity.FinalPrice,
+
+                DistanceToPickupKm = entity.DistanceToPickupKm,
+                TimeToPickupMin = entity.DurationMinToPickup,
+
+                DistanceToDestinationKm = entity.DistanceToDestinationKm,
+                TimeToDestinationMin = entity.DurationMinToDestination,
+
+                Status = entity.Status,
+
+                StartedAt = entity.StartedAt,
+                EndedAt = entity.EndedAt,
+                CanceledAt = entity.CanceledAt,
+
+                CancellationReason = entity.CancellationReason ?? string.Empty
             };
         }
 
@@ -148,6 +216,8 @@ namespace MaisGuinchos.Services
                 throw new BusinessException("Para começar o trajeto a viagem deve estar no status 'Chegou ao ponto de coleta'.");
 
             travel.Status = TowTravelStatus.InProgress;
+            await _hubContext.Clients.User(travel.TowRequest.ClientId.ToString())
+                .SendAsync("JourneyStarted");
             travel.StartedAt = DateTime.UtcNow;
 
             await _towTravelRepo.SaveChangesAsync();
@@ -166,12 +236,15 @@ namespace MaisGuinchos.Services
                 throw new NotFoundException("Viagem não encontrada.");
 
             if (travel.Id != travelId)
-                throw new BusinessException("Viagem atual não corresponde ao ID fornecido.");
+                throw new BusinessException("Viagem informada não corresponde a viagem atual.");    
 
-            if (travel.Status != TowTravelStatus.InProgress)
-                throw new BusinessException("Para finalizar o trajeto a viagem deve estar no status 'Em progresso'.");
+            if (travel.Status != TowTravelStatus.ArrivedAtDestination)
+                throw new BusinessException("Para finalizar a viagem deve estar no status 'Chegou ao destino'.");
 
-            travel.Status = TowTravelStatus.ArrivedAtDestination;
+            await _hubContext.Clients.User(travel.TowRequest.ClientId.ToString())
+                .SendAsync("JourneyFinished");
+
+            travel.Status = TowTravelStatus.Finished;
             travel.EndedAt = DateTime.UtcNow;
 
             await _towTravelRepo.SaveChangesAsync();

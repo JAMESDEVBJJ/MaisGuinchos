@@ -1,4 +1,5 @@
-﻿using MaisGuinchos.Models;
+﻿using MaisGuinchos.Dtos.Guincho;
+using MaisGuinchos.Models;
 
 namespace MaisGuinchos.Dtos.Tow.Travel
 {
@@ -44,5 +45,9 @@ namespace MaisGuinchos.Dtos.Tow.Travel
         public LocationDTO Pickup { get; set; }
 
         public LocationDTO Destination { get; set; }
+
+        public TowGuinchoDTO Truck { get; set; }
+
+        public string DriverPhoto { get; set; }
     }
 }

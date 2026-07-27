@@ -52,7 +52,7 @@ namespace MaisGuinchos.Controllers
                 return Unauthorized("Id do usuário não encontrado.");
             }
 
-            var motoristas = await _userService.BuscarMotoristasProximos(userId, limit);
+            var motoristas = await _userService.BuscarMotoristasProximos(Guid.Parse(userId), limit);
 
             if (!motoristas.Any())
             {
@@ -62,12 +62,51 @@ namespace MaisGuinchos.Controllers
             return Ok(motoristas);
         }
 
+        [Authorize]
+        [HttpGet("driver/{driverId:guid}")]
+        public async Task<IActionResult> GetGuinchoByDriverId(Guid driverId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userId == null)
+            {
+                return Unauthorized("Id do usuário não encontrado.");
+            }
+
+            var guincho = await _userService.GetMotoristaProxById(Guid.Parse(userId), driverId);
+
+            if (guincho == null)
+            {
+                return NotFound("Não foi possível encontrar o motorista.");
+            }
+
+            return Ok(guincho);
+        }
+
 
         [HttpGet("")]
         public async Task<IActionResult> GetUserById([FromBody] Guid id)
         {
             var user = await _userService.GetUserById(id);
             if (user == null) return NotFound();
+            return Ok(user);
+        }
+
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMe()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userId == null)
+            {
+                return Unauthorized("Id do usuário não encontrado.");
+            }
+
+            var user = await _userService.GetUserProfileById(Guid.Parse(userId));
+
+            if (user == null) return NotFound("Usuário não encontrado.");
+
             return Ok(user);
         }
 
@@ -82,7 +121,7 @@ namespace MaisGuinchos.Controllers
             }
 
             return CreatedAtAction(nameof(GetUserById), userAdd);
-            
+
         }
 
         [HttpPost("login")]
@@ -96,12 +135,22 @@ namespace MaisGuinchos.Controllers
             var token = await _userService.LoginUser(userLogin);
 
             return Ok(token);
-        } 
+        }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser([FromBody] UpdUserDto userUpd, [FromRoute] Guid id)
+        [Authorize]
+        [HttpPut("profile")]
+        public async Task<IActionResult> UpdateUser([FromForm] UpdateUserProfileDTO userUpd)
         {
-            var updatedUser = await _userService.UpdateUser(userUpd, id);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userIdClaim == null)
+            {
+                return Unauthorized();
+            }
+
+            var userId = Guid.Parse(userIdClaim);
+
+            var updatedUser = await _userService.UpdateUserProfile(userUpd, userId);
 
             return Ok(updatedUser);
         }
@@ -110,7 +159,7 @@ namespace MaisGuinchos.Controllers
         [Authorize(Roles = "Cliente,Motorista")]
         public async Task<IActionResult> UpdateLocation([FromBody] AddressDTO address)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);    
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (userId == null)
             {
@@ -122,6 +171,24 @@ namespace MaisGuinchos.Controllers
             var updatedLocation = await _userService.UpdateLocation(userGuid, address, User);
 
             return Ok(updatedLocation);
+        }
+
+        [Authorize]
+        [HttpPut("password")]
+        public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordDTO dto)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null)
+            {
+                return Unauthorized();
+            }
+
+            await _userService.UpdatePassword(dto, Guid.Parse(userIdClaim));
+
+            return Ok(new
+            {
+                message = "Senha atualizada com sucesso."
+            });
         }
     }
 }

@@ -12,7 +12,7 @@ namespace MaisGuinchos.Dtos
         public string Color { get; set; }
         public string Model {  get; set; }
 
-        public double DistanceKm { get; set; }
+        public double? DistanceKm { get; set; }
 
     }   
 

@@ -3,6 +3,7 @@ using System;
 using MaisGuinchos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MaisGuinchos.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260428022023_NullableRouteDatasForTowRequest")]
+    partial class NullableRouteDatasForTowRequest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -138,10 +141,6 @@ namespace MaisGuinchos.Migrations
                     b.Property<Guid>("DriverId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("DropoffAddress")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<double>("DropoffLat")
                         .HasColumnType("double precision");
 
@@ -163,10 +162,6 @@ namespace MaisGuinchos.Migrations
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
-
-                    b.Property<string>("PickupAddress")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<double>("PickupLat")
                         .HasColumnType("double precision");

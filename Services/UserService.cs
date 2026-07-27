@@ -30,7 +30,7 @@ namespace MaisGuinchos.Services
 
         private readonly PasswordHasher _hasherUtil = new PasswordHasher();
 
-        private const double DISTANCE_TO_ARRIVED_METERS = 150;
+        private const double DISTANCE_TO_ARRIVED_METERS = 200;
 
         public UserService(IUserRepo userRepo,
             IMapsService mapsService,
@@ -65,6 +65,51 @@ namespace MaisGuinchos.Services
             }
 
             return user;
+        }
+
+        public async Task<UserProfileResponseDTO> GetUserProfileById(Guid id)
+        {
+            var user = await _userRepo.GetUserById(id);
+
+            if (user == null)
+            {
+                throw new NotFoundException("User not found");
+            }
+
+            if (user.Tipo == User.UserType.Motorista && user.Guincho != null)
+            {
+                return new UserProfileResponseDTO
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    Cpf = user.Cpf,
+                    Name = user.Name,
+                    Estrelas = user.Estrelas,
+                    NumeroTelefone = user.NumeroTelefone,
+                    Tipo = ((UserType)user.Tipo).ToString(),
+                    UserName = user.UserName,
+                    Guincho = new Dtos.Guincho.TowGuinchoDTO
+                    {
+                        Id = user.Guincho.Id,
+                        Model = user.Guincho.Modelo,
+                        Color = user.Guincho.Cor,
+                        Plate = user.Guincho.Placa,
+                        Photo = user.Guincho.Foto
+                    }
+                };
+            }
+
+            return new UserProfileResponseDTO
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Cpf = user.Cpf,
+                Name = user.Name,
+                Estrelas = user.Estrelas,
+                NumeroTelefone = user.NumeroTelefone,
+                Tipo = ((UserType)user.Tipo).ToString(),
+                UserName = user.UserName
+            };
         }
 
         public async Task<UserAddedDTO?> AddUser(CreateUserDTO user)
@@ -113,10 +158,11 @@ namespace MaisGuinchos.Services
                         Foto = photoUrl
                     };
 
-                } else
+                }
+                else
                 {
                     throw new Exception("Guincho obrigatório para motorista.");
-                } 
+                }
             }
 
 
@@ -133,7 +179,7 @@ namespace MaisGuinchos.Services
                     Tipo = (UserAddedDTO.UserType)userAdded.Tipo
                 };
 
-                if(userAdded.Guincho != null)
+                if (userAdded.Guincho != null)
                 {
                     userDTO.Guincho = new CreateGuinchoRequest
                     {
@@ -196,7 +242,7 @@ namespace MaisGuinchos.Services
             };
         }
 
-        public async Task<User> UpdateUser(UpdUserDto userUpd, Guid id)
+        public async Task<UpdateUserProfileResponseDTO> UpdateUserProfile(UpdateUserProfileDTO userUpd, Guid id)
         {
             var user = await _userRepo.GetUserById(id);
 
@@ -205,40 +251,70 @@ namespace MaisGuinchos.Services
                 throw new NotFoundException("User");
             }
 
-            user.Name = userUpd.Name ?? user.Name;
-            user.UserName = userUpd.UserName ?? user.UserName;
-
-            if (userUpd.Cpf != null && userUpd.Cpf != user.Cpf)
+            if (!string.IsNullOrWhiteSpace(userUpd.Name))
             {
-                var exist = await _userRepo.GetUserByCpf(userUpd.Cpf);
-
-                if (exist != null)
-                {
-                    throw new Exception("User with this CPF already exist.");
-                }
-
-                user.Cpf = userUpd.Cpf;
+                user.Name = userUpd.Name;
             }
 
-            user.NumeroTelefone = userUpd.NumeroTelefone ?? user.NumeroTelefone;
-            user.Password = userUpd.Password != null ? _hasherUtil.Hasher(userUpd.Password) : user.Password;
+            if (!string.IsNullOrWhiteSpace(userUpd.UserName))
+            {
+                user.UserName = userUpd.UserName;
+            }
 
-            if (userUpd.Email != null && userUpd.Email != user.Email)
+            if (!string.IsNullOrWhiteSpace(userUpd.NumeroTelefone))
+            {
+                user.NumeroTelefone = userUpd.NumeroTelefone;
+            }
+
+            if (!string.IsNullOrWhiteSpace(userUpd.NumeroTelefone) && userUpd.Email != user.Email)
             {
                 var exist = await _userRepo.GetUserByEmail(userUpd.Email);
 
                 if (exist != null)
                 {
-                    throw new Exception("User with this email already exist.");
-
+                    throw new Exception(
+                        "User with this email already exist."
+                    );
                 }
 
                 user.Email = userUpd.Email;
             }
 
-            await _userRepo.Save();
+            if (user.Tipo == User.UserType.Motorista)
+            {
+                if (userUpd.Photo != null)
+                {
+                    var photoUrl = await SavePhotoAsync(userUpd.Photo);
+                    user.Guincho!.Foto = photoUrl;
+                }
+                if (userUpd.Guincho != null)
+                {
+                    user.Guincho!.Modelo = userUpd.Guincho.Model ?? user.Guincho.Modelo;
+                    user.Guincho!.Cor = userUpd.Guincho.Color ?? user.Guincho.Cor;
+                    user.Guincho!.Placa = userUpd.Guincho.Plate ?? user.Guincho.Placa;
+                }
+            }
 
-            return await _userRepo.GetUserById(id);
+            var userUpdated = await _userRepo.UpdateUser(user);
+
+            return new UpdateUserProfileResponseDTO
+            {
+                Id = user.Id,
+                Name = user.Name,
+                UserName = user.UserName,
+                Email = user.Email,
+                NumeroTelefone = user.NumeroTelefone,
+                Cpf = user.Cpf,
+                Tipo = user.Tipo.ToString(),
+                Guincho = user.Guincho != null ? new Dtos.Guincho.TowGuinchoDTO
+                {
+                    Id = user.Guincho.Id,
+                    Model = user.Guincho.Modelo,
+                    Color = user.Guincho.Cor,
+                    Plate = user.Guincho.Placa,
+                    Photo = user.Guincho.Foto
+                } : null,
+            };
         }
 
         public async Task<UpdLocationResponseDTO> UpdateLocation(Guid id, AddressDTO address, ClaimsPrincipal userClaims)
@@ -292,20 +368,50 @@ namespace MaisGuinchos.Services
 
             if (role == "Motorista")
             {
-                await HandleDriverLocationUpdate(id, locationAdded);
+                await HandleRealtimeTravelTracking(id, locationAdded);
             }
 
             return locationReturn;
         }
 
-        private async Task HandleDriverLocationUpdate(Guid driverId, Location updatedLocation)
+        public async Task UpdatePassword(UpdatePasswordDTO dto, Guid userId)
+        {
+            if (dto.NewPassword != dto.ConfirmPassword)
+            {
+                throw new BadRequestException("A nova senha e a confirmação não coincidem.");
+            }
+
+            var user = await _userRepo.GetUserById(userId);
+
+            if (user == null)
+            {
+                throw new NotFoundException("User");
+            }
+
+            var passwordValid = _hasherUtil.Verify(
+                dto.CurrentPassword,
+                user.Password
+            );
+
+            if (!passwordValid)
+            {
+                throw new BadRequestException("A senha atual está incorreta.");
+            }
+
+
+            user.Password = _hasherUtil.Hasher(dto.NewPassword);
+
+            await _userRepo.UpdateUser(user);
+        }
+
+        private async Task HandleRealtimeTravelTracking(Guid driverId, Location updatedLocation)
         {
             if (updatedLocation?.Latitude == null || updatedLocation?.Longitude == null)
                 return;
 
             var travel = await _travelService.GetActiveByDriverId(driverId);
 
-            if (travel != null && 
+            if (travel != null &&
                 (travel.Status == TowTravelStatus.InProgress || travel.Status == TowTravelStatus.GoingToClient))
             {
                 var target = _travelService.ResolveTarget(travel);
@@ -348,8 +454,12 @@ namespace MaisGuinchos.Services
                     if (distanceToPickupM <= DISTANCE_TO_ARRIVED_METERS)
                     {
                         travel.Status = TowTravelStatus.ArrivedAtPickup;
+
                         await _hubContext.Clients.User(travel.TowRequest.ClientId.ToString())
                             .SendAsync("DriverArrivedAtPickup");
+                        await _hubContext.Clients.User(travel.DriverId.ToString())
+                            .SendAsync("ArrivedAtPickup");
+
                         await _towTravelRepo.SaveChangesAsync();
                     }
                 }
@@ -360,8 +470,12 @@ namespace MaisGuinchos.Services
                     if (distanceToDropoffM <= DISTANCE_TO_ARRIVED_METERS)
                     {
                         travel.Status = TowTravelStatus.ArrivedAtDestination;
+
                         await _hubContext.Clients.User(travel.TowRequest.ClientId.ToString())
                             .SendAsync("DriverArrivedAtDestination");
+                        await _hubContext.Clients.User(travel.DriverId.ToString())
+                           .SendAsync("ArrivedAtDestination");
+
                         await _towTravelRepo.SaveChangesAsync();
                     }
                 }
@@ -377,14 +491,14 @@ namespace MaisGuinchos.Services
                 .SendAsync("DriverLocationUpdated", route);
         }
 
-        public async Task<List<MotoristaProxDTO?>> BuscarMotoristasProximos(string userId, int? limit = null)
+        public async Task<List<MotoristaProxDTO?>> BuscarMotoristasProximos(Guid userId, int? limit = null)
         {
-            if (!Guid.TryParse(userId, out var userGuid))
+            if (userId == Guid.Empty)
             {
                 throw new ArgumentException("UserId invalid.");
             }
 
-            var userLocation = await _locationRepo.GetLastFromUser(userGuid);
+            var userLocation = await _locationRepo.GetLastFromUser(userId);
 
             if (userLocation == null)
             {
@@ -394,6 +508,32 @@ namespace MaisGuinchos.Services
             var guinchosProximos = await _userRepo.GetMotoristasProximos(userLocation);
 
             return guinchosProximos!;
+        }
+
+        public async Task<MotoristaProxDTO?> GetMotoristaProxById(
+            Guid userId,
+            Guid id)
+        {
+            var userLocation = await _locationRepo.GetLastFromUser(userId);
+
+            if (userLocation == null)
+            {
+                throw new NotFoundException("User location not found.");
+            }
+
+            var motorista = await _userRepo.GetMotoristaById(id, userLocation.Latitude, userLocation.Longitude);
+
+            if (motorista == null)
+            {
+                throw new NotFoundException("Motorista not found.");
+            }
+
+            if (!motorista.Available)
+            {
+                throw new BusinessException("Motorista não está disponível.");
+            }
+
+            return motorista;
         }
     }
 }

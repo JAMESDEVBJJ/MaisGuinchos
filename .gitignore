@@ -4,9 +4,6 @@ obj/
 *.cache
 *.log
 
-# Ef Core
-Migrations/
-
 # VS Code
 .vscode/
 
@@ -20,3 +17,6 @@ Migrations/
 Thumbs.db
 
 appsettings.json
+
+wwwroot/uploads/*
+!wwwroot/uploads/.gitkeep

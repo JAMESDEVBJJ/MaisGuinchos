@@ -2,6 +2,7 @@
 using MaisGuinchos.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using System.Security.Claims;
 
 namespace MaisGuinchos.Controllers
@@ -28,9 +29,9 @@ namespace MaisGuinchos.Controllers
                 return Unauthorized();
             }
 
-            var towRequestId = await _towRequestService.CreateAsync(clientId, dto);
+            var towRequest = await _towRequestService.CreateAsync(clientId, dto);
 
-            return Ok(new { TowRequestId = towRequestId });
+            return Ok(towRequest);
         }
 
         [HttpGet("{id}")]
@@ -40,6 +41,28 @@ namespace MaisGuinchos.Controllers
             if (towRequest == null)
                 return NotFound("Nenhum pedido de reboque encontrado.");
             return Ok(towRequest);
+        }
+
+        [HttpGet("{userId}/all")]
+        [Authorize]
+        public async Task<IActionResult> GetTowsRequestsByUserId(
+            Guid userId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(idClaim) || !Guid.TryParse(idClaim, out var clientId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _towRequestService.GetTowsRequestsByUserId(
+                userId,
+                page,
+                pageSize);
+
+            return Ok(result);
         }
 
         [HttpGet("pendings")]
@@ -54,6 +77,22 @@ namespace MaisGuinchos.Controllers
             }
 
             var pendingRequests = await _towRequestService.GetTowsPendings(driverId);
+
+            return Ok(pendingRequests);
+        }
+
+        [HttpGet("my-actives")]
+        [Authorize(Roles = "Cliente")]
+        public async Task<IActionResult> GetActivesTowRequestsClient()
+        {
+            var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(idClaim) || !Guid.TryParse(idClaim, out var clientId))
+            {
+                return Unauthorized();
+            }
+
+            var pendingRequests = await _towRequestService.GetTowsPendingsForClient(clientId);
 
             return Ok(pendingRequests);
         }

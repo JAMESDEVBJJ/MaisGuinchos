@@ -1,4 +1,5 @@
-﻿using MaisGuinchos.Models;
+﻿using MaisGuinchos.Dtos.Guincho;
+using MaisGuinchos.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace MaisGuinchos.Dtos.Tow
@@ -13,6 +14,10 @@ namespace MaisGuinchos.Dtos.Tow
         
         [Required]
         public Guid TowDriverId { get; set; }
+
+        public string? DriverPhotoUrl { get; set; }
+
+        public string VehicleModel { get; set; }
 
         [Required]
         public decimal FinalPrice { get; set; }
@@ -67,5 +72,15 @@ namespace MaisGuinchos.Dtos.Tow
         [Required]
         [Range(-180, 180, ErrorMessage = "Longitude do destino inválida")]
         public double DestinationLon { get; set; }
+
+        public string? Notes { get; set; }
+
+        public string? Questions { get; set; }
+
+        public TowGuinchoDTO Truck { get; set; }
+
+        public string DriverPhone { get; set; }
+
+        public string DriverName { get; set; }
     }
 }

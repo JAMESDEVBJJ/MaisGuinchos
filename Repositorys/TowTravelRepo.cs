@@ -23,6 +23,13 @@ namespace MaisGuinchos.Repositorys
             await _appDbContext.SaveChangesAsync();
         }
 
+        public async Task<int> GetTotalCountByUserId(Guid userId)
+        {
+            return await _appDbContext.TowTravels
+                .Where(t => t.DriverId == userId || t.TowRequest.ClientId == userId)
+                .CountAsync();
+        }
+
         public async Task<TowTravel?> GetLastActiveByDriverId(Guid driverId)
         {
             return await _appDbContext.TowTravels
@@ -30,6 +37,27 @@ namespace MaisGuinchos.Repositorys
                 .FirstOrDefaultAsync(t => t.DriverId == driverId &&
                 (t.Status != TowTravelStatus.Finished &&
                 t.Status != TowTravelStatus.Cancelled));
+        }
+
+        public async Task<List<TowTravel>> GetAllByUserId(Guid userId)
+        {
+            return await _appDbContext.TowTravels
+                .Where(t => t.DriverId == userId || t.TowRequest.ClientId == userId)
+                .Include(t => t.Driver).ThenInclude(d => d.Guincho)
+                .Include(t => t.TowRequest).ThenInclude(tr => tr.Client)
+                .OrderByDescending(t => t.CreatedAt).ToListAsync();
+        }
+
+        public async Task<List<TowTravel>> GetAllByUserIdPaginated(Guid userId, int page, int pageSize)
+        {
+            return await _appDbContext.TowTravels
+                .Where(t => t.DriverId == userId || t.TowRequest.ClientId == userId)
+                .Include(t => t.Driver).ThenInclude(d => d.Guincho)
+                .Include(t => t.TowRequest).ThenInclude(tr => tr.Client)
+                .OrderByDescending(t => t.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
         }
 
         public async Task<TowTravel?> GetActiveByClientId(Guid clientId)
@@ -44,9 +72,7 @@ namespace MaisGuinchos.Repositorys
         {
             return await _appDbContext.TowTravels.
                 Where(t => (t.DriverId == userId || t.TowRequest.ClientId == userId) &&
-                (t.Status == TowTravelStatus.GoingToClient ||
-                t.Status == TowTravelStatus.InProgress ||
-                t.Status == TowTravelStatus.ArrivedAtPickup))
+                (t.Status != TowTravelStatus.Cancelled && t.Status != TowTravelStatus.Finished))
                 .Include(t => t.Driver).ThenInclude(d => d.Guincho)
                 .Include(t => t.TowRequest).ThenInclude(tr => tr.Client)
                 .OrderByDescending(t => t.CreatedAt).FirstOrDefaultAsync();

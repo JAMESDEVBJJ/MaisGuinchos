@@ -3,6 +3,7 @@ using System;
 using MaisGuinchos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MaisGuinchos.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260428021857_NotRequiredRouteDatasForNow")]
+    partial class NotRequiredRouteDatasForNow
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -129,18 +132,14 @@ namespace MaisGuinchos.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<double?>("DistanceToDestinationKm")
+                    b.Property<double>("DistanceToDestinationKm")
                         .HasColumnType("double precision");
 
-                    b.Property<double?>("DistanceToPickupKm")
+                    b.Property<double>("DistanceToPickupKm")
                         .HasColumnType("double precision");
 
                     b.Property<Guid>("DriverId")
                         .HasColumnType("uuid");
-
-                    b.Property<string>("DropoffAddress")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<double>("DropoffLat")
                         .HasColumnType("double precision");
@@ -148,10 +147,10 @@ namespace MaisGuinchos.Migrations
                     b.Property<double>("DropoffLon")
                         .HasColumnType("double precision");
 
-                    b.Property<int?>("DurationMinToDestination")
+                    b.Property<int>("DurationMinToDestination")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("DurationMinToPickup")
+                    b.Property<int>("DurationMinToPickup")
                         .HasColumnType("integer");
 
                     b.Property<int>("DurationMinutes")
@@ -163,10 +162,6 @@ namespace MaisGuinchos.Migrations
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
-
-                    b.Property<string>("PickupAddress")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<double>("PickupLat")
                         .HasColumnType("double precision");

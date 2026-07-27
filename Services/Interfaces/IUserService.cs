@@ -9,16 +9,22 @@ namespace MaisGuinchos.Services.Interfaces
     {
         public List<User> GetAllUsers();
 
-        public Task<User> GetUserById(Guid id); 
+        public Task<User> GetUserById(Guid id);
+
+        public Task<UserProfileResponseDTO> GetUserProfileById(Guid id);
 
         public Task<UserAddedDTO> AddUser(CreateUserDTO user);
 
         public Task<LoginResponseDTO> LoginUser(UserLoginDTO user);
 
-        public Task<User> UpdateUser(UpdUserDto userUpd, Guid id);
+        public Task<UpdateUserProfileResponseDTO> UpdateUserProfile(UpdateUserProfileDTO userUpd, Guid id);
 
         public Task<UpdLocationResponseDTO> UpdateLocation(Guid id, AddressDTO address, ClaimsPrincipal userClaims);
 
-        public Task<List<MotoristaProxDTO?>> BuscarMotoristasProximos(string userId, int? limit = null);
+        public Task UpdatePassword(UpdatePasswordDTO dto, Guid userId);
+
+        public Task<List<MotoristaProxDTO?>> BuscarMotoristasProximos(Guid userId, int? limit = null);
+
+        public Task<MotoristaProxDTO?> GetMotoristaProxById(Guid userId, Guid id);
     }
 }
