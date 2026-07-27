@@ -7,6 +7,7 @@ using MaisGuinchos.Hubs;
 using MaisGuinchos.Models;
 using MaisGuinchos.Repositorys.Interfaces;
 using MaisGuinchos.Services.Interfaces;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.SignalR;
 
 namespace MaisGuinchos.Services
@@ -29,13 +30,20 @@ namespace MaisGuinchos.Services
             return await _towTravelRepo.GetLastActiveByDriverId(driverId);
         }
 
-        public async Task<List<TowTravelHistoryResponseDTO>> GetAllByUserId(Guid userId)
+        public async Task<PaginatedResponse<TowTravelHistoryResponseDTO>> GetAllByUserId(Guid userId, int page, int pageSize)
         {
-            var travels = await _towTravelRepo.GetAllByUserId(userId);
+            var travels = await _towTravelRepo.GetAllByUserIdPaginated(userId, page, pageSize);
 
-            return travels
-                .Select(ToHistoryDto)
-                .ToList();
+            var totalItems = await _towTravelRepo.GetTotalCountByUserId(userId);
+
+            return new PaginatedResponse<TowTravelHistoryResponseDTO>
+            {
+                Items = travels.Select(ToHistoryDto).ToList(),
+                Page = page,
+                PageSize = pageSize,
+                TotalItems = totalItems,
+                TotalPages = (int)Math.Ceiling((double)totalItems / pageSize)
+            };
         }
 
         public async Task<TowTravel?> GetActiveByClientId(Guid clientId)

@@ -1,4 +1,5 @@
-﻿using MaisGuinchos.Dtos.Guincho;
+﻿using MaisGuinchos.Dtos;
+using MaisGuinchos.Dtos.Guincho;
 using MaisGuinchos.Dtos.Tow;
 using MaisGuinchos.Exceptions;
 using MaisGuinchos.Hubs;
@@ -122,14 +123,23 @@ namespace MaisGuinchos.Services
             return request ?? throw new Exception("Tow request not found");
         }
 
-        public async Task<List<GetTowsRequestsByUserIdDTO>> GetTowsRequestsByUserId(Guid userId)
+        public async Task<PaginatedResponse<GetTowsRequestsByUserIdDTO>> GetTowsRequestsByUserId(Guid userId, int page, int pageSize)
         {
-            var tows = await _towRequestRepo.GetByUserIdAsync(userId);
+            var tows = await _towRequestRepo.GetTowsRequestsByUserId(userId, page, pageSize);
 
-            if (tows == null || !tows.Any())
-                return new List<GetTowsRequestsByUserIdDTO>();
+            if (!tows.Items.Any())
+            {
+                return new PaginatedResponse<GetTowsRequestsByUserIdDTO>
+                {
+                    Items = [],
+                    Page = tows.Page,
+                    PageSize = tows.PageSize,
+                    TotalItems = tows.TotalItems,
+                    TotalPages = tows.TotalPages
+                };
+            }
 
-            var result = tows.Select(t => new GetTowsRequestsByUserIdDTO
+            var result = tows.Items.Select(t => new GetTowsRequestsByUserIdDTO
             {
                 Id = t.Id,
 
@@ -173,7 +183,14 @@ namespace MaisGuinchos.Services
                 UpdatedAt = t.UpdatedAt
             }).ToList();
 
-            return result;
+            return new PaginatedResponse<GetTowsRequestsByUserIdDTO>
+            {
+                Items = result,
+                TotalItems = tows.TotalItems,
+                Page = tows.Page,
+                PageSize = tows.PageSize,
+                TotalPages = tows.TotalPages
+            };
         }
 
         public async Task<List<GetTowsPendingsDTO>> GetTowsPendings(Guid driverId)

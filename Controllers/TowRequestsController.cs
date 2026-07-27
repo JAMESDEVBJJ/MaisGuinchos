@@ -45,7 +45,10 @@ namespace MaisGuinchos.Controllers
 
         [HttpGet("{userId}/all")]
         [Authorize]
-        public async Task<IActionResult> GetTowsRequestsByUserId(Guid userId)
+        public async Task<IActionResult> GetTowsRequestsByUserId(
+            Guid userId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
         {
             var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
@@ -54,9 +57,12 @@ namespace MaisGuinchos.Controllers
                 return Unauthorized();
             }
 
-            var towsRequests = await _towRequestService.GetTowsRequestsByUserId(userId);
+            var result = await _towRequestService.GetTowsRequestsByUserId(
+                userId,
+                page,
+                pageSize);
 
-            return Ok(towsRequests);    
+            return Ok(result);
         }
 
         [HttpGet("pendings")]

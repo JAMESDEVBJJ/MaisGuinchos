@@ -23,6 +23,13 @@ namespace MaisGuinchos.Repositorys
             await _appDbContext.SaveChangesAsync();
         }
 
+        public async Task<int> GetTotalCountByUserId(Guid userId)
+        {
+            return await _appDbContext.TowTravels
+                .Where(t => t.DriverId == userId || t.TowRequest.ClientId == userId)
+                .CountAsync();
+        }
+
         public async Task<TowTravel?> GetLastActiveByDriverId(Guid driverId)
         {
             return await _appDbContext.TowTravels
@@ -39,6 +46,18 @@ namespace MaisGuinchos.Repositorys
                 .Include(t => t.Driver).ThenInclude(d => d.Guincho)
                 .Include(t => t.TowRequest).ThenInclude(tr => tr.Client)
                 .OrderByDescending(t => t.CreatedAt).ToListAsync();
+        }
+
+        public async Task<List<TowTravel>> GetAllByUserIdPaginated(Guid userId, int page, int pageSize)
+        {
+            return await _appDbContext.TowTravels
+                .Where(t => t.DriverId == userId || t.TowRequest.ClientId == userId)
+                .Include(t => t.Driver).ThenInclude(d => d.Guincho)
+                .Include(t => t.TowRequest).ThenInclude(tr => tr.Client)
+                .OrderByDescending(t => t.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
         }
 
         public async Task<TowTravel?> GetActiveByClientId(Guid clientId)

@@ -1,4 +1,5 @@
-﻿using MaisGuinchos.Models;
+﻿using MaisGuinchos.Dtos;
+using MaisGuinchos.Models;
 using MaisGuinchos.Repositorys.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -46,14 +47,29 @@ namespace MaisGuinchos.Repositorys
             await _appDbContext.SaveChangesAsync();
         }
 
-        public async Task<List<TowRequest>> GetByUserIdAsync(Guid userId)
+        public async Task<PaginatedResponse<TowRequest>> GetTowsRequestsByUserId(Guid userId, int page, int pageSize)
         {
-            return await _appDbContext.TowRequests
-                .Where(tr => tr.ClientId == userId || tr.DriverId == userId)
+            var query = _appDbContext.TowRequests
+                .Where(tr => tr.ClientId == userId || tr.DriverId == userId);
+
+            var totalItems = await query.CountAsync();
+
+            var tows = await query
                 .Include(x => x.Driver)
                 .Include(x => x.Client)
                 .OrderByDescending(x => x.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
+
+            return new PaginatedResponse<TowRequest>
+            {
+                Items = tows,
+                TotalItems = totalItems,
+                Page = page,
+                PageSize = pageSize,
+                TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize)
+            };
         }
 
         public async Task<List<TowRequest>> GetPendingsAsync(Guid driverId)

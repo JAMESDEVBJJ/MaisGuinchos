@@ -1,4 +1,5 @@
-﻿using MaisGuinchos.Models;
+﻿using MaisGuinchos.Dtos;
+using MaisGuinchos.Models;
 
 namespace MaisGuinchos.Repositorys.Interfaces
 {
@@ -9,8 +10,10 @@ namespace MaisGuinchos.Repositorys.Interfaces
         Task<TowRequest?> GetByIdAsync(Guid id);
         Task SaveChangesAsync();
 
-        Task<List<TowRequest>> GetByUserIdAsync(Guid userId);
-
+        Task<PaginatedResponse<TowRequest>> GetTowsRequestsByUserId(
+            Guid userId,
+            int page,
+            int pageSize);
         Task<List<TowRequest>> GetPendingsAsync(Guid driverId);
 
         Task<List<TowRequest>> GetClientPendingsAsync(Guid clientId);

@@ -18,14 +18,16 @@ namespace MaisGuinchos.Controllers
 
         [Route("{userId}/all")]
         [HttpGet]
-        public async Task<IActionResult> GetTowsTravelsByUserId(Guid userId)
+        public async Task<IActionResult> GetTowsTravelsByUserId(Guid userId, 
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
         {
             if (userId == Guid.Empty)
             {
                 return BadRequest("ID do usuário é inválido.");
             }
-
-            var towTravels = await _towTravelService.GetAllByUserId(userId);
+                
+            var towTravels = await _towTravelService.GetAllByUserId(userId, page, pageSize);
             return Ok(towTravels);
         }
 

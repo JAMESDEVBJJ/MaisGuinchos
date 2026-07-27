@@ -1,4 +1,5 @@
-﻿using MaisGuinchos.Dtos.Tow;
+﻿using MaisGuinchos.Dtos;
+using MaisGuinchos.Dtos.Tow;
 using MaisGuinchos.Models;
 
 namespace MaisGuinchos.Services.Interfaces
@@ -9,8 +10,10 @@ namespace MaisGuinchos.Services.Interfaces
 
         Task<TowRequest> GetTowRequestById(Guid towRequestId);
 
-        Task<List<GetTowsRequestsByUserIdDTO>> GetTowsRequestsByUserId(Guid userId);
-
+        Task<PaginatedResponse<GetTowsRequestsByUserIdDTO>> GetTowsRequestsByUserId(
+            Guid userId,
+            int page,
+            int pageSize);
 
         Task<List<GetTowsPendingsDTO>> GetTowsPendings(Guid driverId);
 
