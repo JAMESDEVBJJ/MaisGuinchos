@@ -17,3 +17,6 @@ obj/
 Thumbs.db
 
 appsettings.json
+
+wwwroot/uploads/*
+!wwwroot/uploads/.gitkeep
