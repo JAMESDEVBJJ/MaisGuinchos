@@ -258,6 +258,15 @@ namespace MaisGuinchos.Services
 
             if (!string.IsNullOrWhiteSpace(userUpd.UserName))
             {
+                var exist = await _userRepo.GetUserByUserName(userUpd.UserName);
+
+                if (exist != null && exist.Id != user.Id)
+                {
+                    throw new BadRequestException(
+                        "Este nome de usuário já está em uso."
+                    );
+                }
+
                 user.UserName = userUpd.UserName;
             }
 
@@ -266,7 +275,7 @@ namespace MaisGuinchos.Services
                 user.NumeroTelefone = userUpd.NumeroTelefone;
             }
 
-            if (!string.IsNullOrWhiteSpace(userUpd.NumeroTelefone) && userUpd.Email != user.Email)
+            if (!string.IsNullOrWhiteSpace(userUpd.Email) && userUpd.Email != user.Email)
             {
                 var exist = await _userRepo.GetUserByEmail(userUpd.Email);
 
@@ -398,6 +407,12 @@ namespace MaisGuinchos.Services
                 throw new BadRequestException("A senha atual está incorreta.");
             }
 
+            if (_hasherUtil.Verify(dto.NewPassword, user.Password))
+            {
+                throw new BadRequestException(
+                    "A nova senha deve ser diferente da senha atual."
+                );
+            }
 
             user.Password = _hasherUtil.Hasher(dto.NewPassword);
 

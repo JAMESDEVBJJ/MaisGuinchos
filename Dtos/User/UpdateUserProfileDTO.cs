@@ -1,16 +1,23 @@
-﻿using MaisGuinchos.Dtos.Guincho;
+﻿using System.ComponentModel.DataAnnotations;
+using MaisGuinchos.Dtos.Guincho;
 
 namespace MaisGuinchos.Dtos.User
 {
     public class UpdateUserProfileDTO
     {
-        public string Name { get; set; } = string.Empty;
+        [StringLength(100, MinimumLength = 3,
+            ErrorMessage = "O nome deve ter entre 3 e 100 caracteres.")]
+        public string? Name { get; set; }
 
-        public string UserName { get; set; } = string.Empty;
+        [StringLength(30, MinimumLength = 3,
+            ErrorMessage = "O nome de usuário deve ter entre 3 e 30 caracteres.")]
+        public string? UserName { get; set; }
 
-        public string Email { get; set; } = string.Empty;
+        [EmailAddress(ErrorMessage = "Email inválido.")]
+        public string? Email { get; set; }
 
-        public string NumeroTelefone { get; set; } = string.Empty;
+        [Phone(ErrorMessage = "Telefone inválido.")]
+        public string? NumeroTelefone { get; set; }
 
         public IFormFile? Photo { get; set; }
 
