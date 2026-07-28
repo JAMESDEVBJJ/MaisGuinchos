@@ -12,6 +12,9 @@ namespace MaisGuinchos.Repositorys.Interfaces
 
         public Task<User> GetUserByCpf(string cpf);
 
+        public Task<User> GetUserByUserName(string userName);
+
+
         public Task<User?> GetUserById(Guid id);
 
         public Task<List<MotoristaProxDTO>> GetMotoristasProximos(Location userLocation);

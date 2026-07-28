@@ -1,14 +1,22 @@
-﻿namespace MaisGuinchos.Dtos.Guincho
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace MaisGuinchos.Dtos.Guincho
 {
     public class TowGuinchoDTO
     {
         public Guid Id { get; set; }
 
-        public string Model { get; set; } = string.Empty;
+        [StringLength(50)]
+        public string? Model { get; set; }
 
-        public string Color { get; set; } = string.Empty;
+        [StringLength(30)]
+        public string? Color { get; set; }
 
-        public string Plate { get; set; } = string.Empty; 
+        [RegularExpression(
+            @"^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$",
+            ErrorMessage = "Placa inválida."
+        )]
+        public string? Plate { get; set; }
 
         public string? Photo { get; set; }
     }

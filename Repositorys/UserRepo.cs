@@ -46,6 +46,13 @@ namespace MaisGuinchos.Repositorys
             return user;
         }
 
+        public async Task<User?> GetUserByUserName(string userName)
+        {
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.UserName == userName);
+
+            return user;
+        }   
+
         public async Task<MotoristaProxDTO?> GetMotoristaById(
             Guid id,
             double userLat,
