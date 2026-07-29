@@ -110,6 +110,22 @@ namespace MaisGuinchos.Controllers
             return Ok(user);
         }
 
+        [Authorize]
+        [HttpGet("status")]
+        public async Task<IActionResult> GetUserStatus()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userId == null)
+            {
+                return Unauthorized("Id do usuário não encontrado.");
+            }
+
+            var status = await _userService.GetUserStatus(Guid.Parse(userId));
+
+            return Ok(status);
+        }
+
         [HttpPost("")]
         public async Task<IActionResult> AddUser([FromForm] CreateUserDTO user)
         {
