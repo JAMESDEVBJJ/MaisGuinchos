@@ -47,5 +47,25 @@ namespace MaisGuinchos.Services
 
             return guincho;
         }
+
+        public async Task<GetGuinchoStatusDTO> GetStatus(string userId)
+        {
+            if (!Guid.TryParse(userId, out var userGuid))
+            {
+                throw new ArgumentException("Invalid user ID format.", nameof(userId));
+            }
+
+            var guincho = await _guinchoRepo.GetGuinchoByUserId(userGuid);
+
+            if (guincho == null)
+            {
+                throw new KeyNotFoundException("Guincho not found for the given user ID.");
+            }
+
+            return new GetGuinchoStatusDTO
+            {
+                Status = guincho.Disponivel
+            };
+        }
     }
 }

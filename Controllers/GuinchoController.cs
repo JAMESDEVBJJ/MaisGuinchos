@@ -39,17 +39,20 @@ namespace MaisGuinchos.Controllers
             return Ok(updatedGuincho);
         }
 
-        /*public IActionResult GetGuinchos()
+        [HttpGet("status")]
+        [Authorize(Roles = "Motorista")]
+        public async Task<IActionResult> GetStatus()
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+            if (userId == null)
+            {
+                return Unauthorized("Id do usuário não encontrado.");
+            }
+
+            var status = await _guinchoService.GetStatus(userId);
+
+            return Ok(status);
         }
-
-        public IActionResult CreateGuincho([FromBody] GTS guincho)
-        {
-            var guincho = _guinchoService.addGuincho(guincho);
-
-            return Ok(guincho);
-        }
-        */
     }
 }
