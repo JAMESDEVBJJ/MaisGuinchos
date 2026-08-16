@@ -5,5 +5,6 @@ namespace MaisGuinchos.Services.Interfaces
     public interface IGuinchoService
     {
         Task<Models.Guincho?> UpdateStatus(string userId, UpdateGuinchoStatusDTO statusDto);
+        Task<GetGuinchoStatusDTO> GetStatus(string userId);
     }
 }

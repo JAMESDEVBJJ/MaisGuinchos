@@ -17,7 +17,7 @@ namespace MaisGuinchos.Repositorys.Interfaces
 
         public Task<User?> GetUserById(Guid id);
 
-        public Task<List<MotoristaProxDTO>> GetMotoristasProximos(Location userLocation);
+        public Task<List<MotoristaProxDTO>> GetMotoristasProximos(Location userLocation, List<FiltroOrdenacao>? filtros = null, int? limit = null);
 
         public Task<MotoristaProxDTO?> GetMotoristaById(Guid id, double lat, double lon);
 

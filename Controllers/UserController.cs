@@ -40,10 +40,11 @@ namespace MaisGuinchos.Controllers
 
             return Ok(users);
         }
-
         [HttpGet("proximos")]
         [Authorize]
-        public async Task<IActionResult> GetAllMotoritasProx(int? limit = null)
+        public async Task<IActionResult> GetAllMotoritasProx(
+            int? limit = null,
+            string? filtros = null)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -52,7 +53,10 @@ namespace MaisGuinchos.Controllers
                 return Unauthorized("Id do usuário não encontrado.");
             }
 
-            var motoristas = await _userService.BuscarMotoristasProximos(Guid.Parse(userId), limit);
+            var filtrosAtivos = FiltroOrdenacaoParser.Parse(filtros);
+
+            var motoristas = await _userService.BuscarMotoristasProximos(
+                Guid.Parse(userId), limit, filtrosAtivos);
 
             if (!motoristas.Any())
             {
