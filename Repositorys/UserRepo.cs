@@ -123,11 +123,14 @@ namespace MaisGuinchos.Repositorys
             };
         }
 
-        public async Task<List<MotoristaProxDTO>> GetMotoristasProximos(Location userLocation)
+        public async Task<List<MotoristaProxDTO>> GetMotoristasProximos(
+    Location userLocation,
+    List<FiltroOrdenacao>? filtros = null,
+    int? limit = null)
         {
             var users = await GetAllMotoristasComLoc();
 
-            return users.Select(u => new MotoristaProxDTO
+            var resultado = users.Select(u => new MotoristaProxDTO
             {
                 Motorista = new MotoristaComLoc
                 {
@@ -146,7 +149,44 @@ namespace MaisGuinchos.Repositorys
                 DistanceKm = GeoHelper.CalcularDistanciaKm(
                    userLocation.Latitude, userLocation.Longitude,
                    u.Lat, u.Lon)
-            }).OrderBy(m => m.DistanceKm).Take(10).ToList();
+                // TODO: quando existir tarifa -> PricePerKm = u.PricePerKm
+            });
+
+            var ordenado = AplicarOrdenacao(resultado, filtros);
+
+            return ordenado.Take(limit ?? 10).ToList();
+        }
+
+        private static IEnumerable<MotoristaProxDTO> AplicarOrdenacao(
+            IEnumerable<MotoristaProxDTO> query,
+            List<FiltroOrdenacao>? filtros)
+        {
+            if (filtros == null || filtros.Count == 0)
+            {
+                return query.OrderBy(m => m.DistanceKm); 
+            }
+
+            IOrderedEnumerable<MotoristaProxDTO>? ordenado = null;
+
+            foreach (var filtro in filtros)
+            {
+                ordenado = filtro switch
+                {
+                    FiltroOrdenacao.Distancia => ordenado == null
+                        ? query.OrderBy(m => m.DistanceKm)
+                        : ordenado.ThenBy(m => m.DistanceKm),
+
+                    FiltroOrdenacao.Avaliacao => ordenado == null
+                        ? query.OrderByDescending(m => m.Stars)
+                        : ordenado.ThenByDescending(m => m.Stars),
+
+                    FiltroOrdenacao.Preco => ordenado,
+
+                    _ => ordenado
+                };
+            }
+
+            return ordenado ?? query.OrderBy(m => m.DistanceKm);
         }
 
         public async Task<List<MotoristaComLoc>> GetAllMotoristasComLoc()

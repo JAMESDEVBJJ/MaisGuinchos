@@ -506,7 +506,10 @@ namespace MaisGuinchos.Services
                 .SendAsync("DriverLocationUpdated", route);
         }
 
-        public async Task<List<MotoristaProxDTO?>> BuscarMotoristasProximos(Guid userId, int? limit = null)
+        public async Task<List<MotoristaProxDTO?>> BuscarMotoristasProximos(
+            Guid userId,
+            int? limit = null,
+            List<FiltroOrdenacao>? filtros = null)
         {
             if (userId == Guid.Empty)
             {
@@ -520,7 +523,7 @@ namespace MaisGuinchos.Services
                 return [];
             }
 
-            var guinchosProximos = await _userRepo.GetMotoristasProximos(userLocation);
+            var guinchosProximos = await _userRepo.GetMotoristasProximos(userLocation, filtros, limit);
 
             return guinchosProximos!;
         }
