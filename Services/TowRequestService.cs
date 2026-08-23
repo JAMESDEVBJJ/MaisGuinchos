@@ -275,7 +275,7 @@ namespace MaisGuinchos.Services
 
             if (towRequest.Status != TowRequestStatus.WaitingDriverResponse)
             {
-                throw new Exception("Contra oferta só pode ser feita em solicitações pendentes");
+                throw new BadRequestException("Contra oferta só pode ser feita em solicitações pendentes.");
             }
 
             towRequest.CounterOfferPrice = counterOffer.NewPrice;
@@ -570,8 +570,9 @@ namespace MaisGuinchos.Services
 
             var response = new RejectTowRequestResponseDTO
             {
-                TowRequestId = towRequest.Id,
-                TowRequestStatus = towRequest.Status
+                Id = towRequest.Id,
+                TowRequestStatus = towRequest.Status,
+                DriverName = towRequest.Driver.Name
             };
 
             await _hubContext.Clients.User(towRequest.ClientId.ToString()).SendAsync("TowRequestRejected", response);
@@ -597,7 +598,7 @@ namespace MaisGuinchos.Services
 
             var response = new CancelTowRequestResponseDTO
             {
-                TowRequestId = towRequest.Id,
+                Id = towRequest.Id,
                 TowRequestStatus = towRequest.Status
             };
 
