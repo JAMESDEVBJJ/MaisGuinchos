@@ -25,7 +25,7 @@ namespace MaisGuinchos.Services.Interfaces
 
         public Task UpdatePassword(UpdatePasswordDTO dto, Guid userId);
 
-        public Task<List<MotoristaProxDTO?>> BuscarMotoristasProximos(Guid userId, int? limit = null);
+        public Task<List<MotoristaProxDTO?>> BuscarMotoristasProximos(Guid userId, int? limit = null, List<FiltroOrdenacao>? filtros = null);
 
         public Task<MotoristaProxDTO?> GetMotoristaProxById(Guid userId, Guid id);
     }
