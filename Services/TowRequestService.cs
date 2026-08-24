@@ -20,7 +20,12 @@ namespace MaisGuinchos.Services
         private readonly ITowTravelRepo _towTravelRepo;
         private readonly IHubContext<TowHub> _hubContext;
         private readonly IUserService _userService;
-
+        private static readonly TowRequestStatus[] CancellableStatuses =
+        {
+            TowRequestStatus.WaitingDriverResponse,
+            TowRequestStatus.CounterOfferSent,
+            TowRequestStatus.CounterOfferRejected
+        };
         public TowRequestService(ITowRequestRepo towRequestRepo,
             IHubContext<TowHub> hubContext, IUserService userService,
             ITowTravelRepo towTravelRepo,
@@ -54,7 +59,7 @@ namespace MaisGuinchos.Services
             {
                 pickupAddress = $"{dto.PickupLat:F6}, {dto.PickupLon:F6}";
                 dropoffAddress = $"{dto.DropoffLat:F6}, {dto.DropoffLon:F6}";
-            }            
+            }
 
             var request = new Models.TowRequest
             {
@@ -112,7 +117,7 @@ namespace MaisGuinchos.Services
                 CreatedAt = request.CreatedAt
             };
 
-            await _hubContext.Clients.Group(dto.DriverId.ToString()).SendAsync("ReceiveTowRequest", towPending  );
+            await _hubContext.Clients.Group(dto.DriverId.ToString()).SendAsync("ReceiveTowRequest", towPending);
 
             return towPending;
         }
@@ -152,7 +157,7 @@ namespace MaisGuinchos.Services
                 PickupAddress = t.PickupAddress,
                 PickupLat = t.PickupLat,
                 PickupLon = t.PickupLon,
-                
+
                 DropoffAddress = t.DropoffAddress,
                 DropoffLat = t.DropoffLat,
                 DropoffLon = t.DropoffLon,
@@ -205,6 +210,7 @@ namespace MaisGuinchos.Services
                 Id = t.Id,
                 ClientName = t.Client.Name,
                 ClientId = t.ClientId,
+                ClientPhone = t.Client.NumeroTelefone,
                 PickupLat = t.PickupLat,
                 PickupLon = t.PickupLon,
                 PickupAddress = t.PickupAddress,
@@ -251,7 +257,7 @@ namespace MaisGuinchos.Services
                 CreatedAt = t.CreatedAt,
                 CounterOfferAt = t.CounterOfferAt,
                 CounterOfferPercent = t.CounterOfferPercent,
-                CounterOfferPrice   = t.CounterOfferPrice,
+                CounterOfferPrice = t.CounterOfferPrice,
                 CounterOfferReason = t.CounterOfferReason
             }).ToList();
 
@@ -269,7 +275,7 @@ namespace MaisGuinchos.Services
 
             if (towRequest.Status != TowRequestStatus.WaitingDriverResponse)
             {
-                throw new Exception("Contra oferta só pode ser feita em solicitações pendentes");
+                throw new BadRequestException("Contra oferta só pode ser feita em solicitações pendentes.");
             }
 
             towRequest.CounterOfferPrice = counterOffer.NewPrice;
@@ -460,7 +466,7 @@ namespace MaisGuinchos.Services
 
         public async Task<AcceptTowRequestResponseDTO> AcceptCounterOffer(Guid idTowRequest)
         {
-            var towRequest = await _towRequestRepo.GetByIdAsync(idTowRequest);      
+            var towRequest = await _towRequestRepo.GetByIdAsync(idTowRequest);
 
             if (towRequest == null)
             {
@@ -493,7 +499,8 @@ namespace MaisGuinchos.Services
 
             var towTravelId = Guid.NewGuid();
 
-            await _towTravelRepo.AddAsync(new Models.TowTravel {
+            await _towTravelRepo.AddAsync(new Models.TowTravel
+            {
                 Id = towTravelId,
                 TowRequestId = towRequest.Id,
                 DriverId = towRequest.DriverId,
@@ -542,6 +549,60 @@ namespace MaisGuinchos.Services
             };
 
             await _hubContext.Clients.User(towRequest.DriverId.ToString()).SendAsync("CounterOfferAccepted", response);
+
+            return response;
+        }
+        public async Task<RejectTowRequestResponseDTO> RejectTowRequest(Guid id)
+        {
+            var towRequest = await _towRequestRepo.GetByIdAsync(id);
+
+            if (towRequest is null)
+                throw new NotFoundException("Solicitação de reboque não encontrada.");
+
+            if (!CancellableStatuses.Contains(towRequest.Status))
+                throw new BusinessException(
+                    "Não é possível recusar essa solicitação no status atual.");
+
+            towRequest.Status = TowRequestStatus.Rejected;
+            towRequest.UpdatedAt = DateTime.UtcNow;
+
+            await _towRequestRepo.UpdateAsync(towRequest);
+
+            var response = new RejectTowRequestResponseDTO
+            {
+                Id = towRequest.Id,
+                TowRequestStatus = towRequest.Status,
+                DriverName = towRequest.Driver.Name
+            };
+
+            await _hubContext.Clients.User(towRequest.ClientId.ToString()).SendAsync("TowRequestRejected", response);
+
+            return response;
+        }
+
+        public async Task<CancelTowRequestResponseDTO> CancelTowRequest(Guid id)
+        {
+            var towRequest = await _towRequestRepo.GetByIdAsync(id);
+
+            if (towRequest is null)
+                throw new NotFoundException("Solicitação de reboque não encontrada.");
+
+            if (!CancellableStatuses.Contains(towRequest.Status))
+                throw new BusinessException(
+                    "Não é possível cancelar essa solicitação no status atual.");
+
+            towRequest.Status = TowRequestStatus.Cancelled;
+            towRequest.UpdatedAt = DateTime.UtcNow;
+
+            await _towRequestRepo.UpdateAsync(towRequest);
+
+            var response = new CancelTowRequestResponseDTO
+            {
+                Id = towRequest.Id,
+                TowRequestStatus = towRequest.Status
+            };
+
+            await _hubContext.Clients.User(towRequest.DriverId.ToString()).SendAsync("TowRequestCancelled", response);
 
             return response;
         }

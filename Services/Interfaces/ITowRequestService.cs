@@ -26,5 +26,8 @@ namespace MaisGuinchos.Services.Interfaces
         Task<AcceptTowRequestResponseDTO> AcceptTowRequest(Guid idTowRequest);
 
         Task<AcceptTowRequestResponseDTO> AcceptCounterOffer(Guid idTowRequest);
+
+        Task<RejectTowRequestResponseDTO> RejectTowRequest(Guid id);
+        Task<CancelTowRequestResponseDTO> CancelTowRequest(Guid id);
     }
 }
