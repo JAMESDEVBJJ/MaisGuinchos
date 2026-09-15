@@ -249,7 +249,7 @@ namespace MaisGuinchos.Services
 
             var passwordValid = _hasherUtil.Verify(userDto.Password, user.Password);
 
-            if ((!passwordValid && 0 != 0))
+            if (!passwordValid)
             {
                 throw new UnauthorizedAccessException("Invalid credentials.");
             }
