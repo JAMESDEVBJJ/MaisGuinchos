@@ -96,6 +96,46 @@ namespace MaisGuinchos.Services
                 return null;
             }
 
+            double? distanceToPickup = entity.DistanceToPickupKm;
+            int? timeToPickup = entity.DurationMinToPickup;
+
+            double? distanceToDestination = entity.DistanceToDestinationKm;
+            int? timeToDestination = entity.DurationMinToDestination;
+
+            if (entity.Status == TowTravelStatus.GoingToClient)
+            {
+                var route = await _mapsService.GetRoute(
+                    lastDriverLoc.Latitude,
+                    lastDriverLoc.Longitude,
+                    entity.TowRequest.PickupLat,
+                    entity.TowRequest.PickupLon
+                );
+
+                if (route != null)
+                {
+                    distanceToPickup = route.DistanceKm;
+                    timeToPickup = route.DurationMinutes;
+                }
+            }
+
+            if (entity.Status == TowTravelStatus.InProgress)
+            {
+                var route = await _mapsService.GetRoute(
+                    lastDriverLoc.Latitude,
+                    lastDriverLoc.Longitude,
+                    entity.TowRequest.DropoffLat,
+                    entity.TowRequest.DropoffLon
+                );
+
+                if (route != null)
+                {
+                    distanceToPickup = 0;
+                    timeToPickup = 0;
+                    distanceToDestination = route.DistanceKm;
+                    timeToDestination = route.DurationMinutes;
+                }
+            }
+
             return new TowTravelResponseDTO
             {
                 Id = entity.Id,
@@ -119,11 +159,11 @@ namespace MaisGuinchos.Services
 
                 FinalPrice = entity.FinalPrice,
 
-                DistanceToPickupKm = entity.DistanceToPickupKm,
-                TimeToPickupMin = entity.DurationMinToPickup,
+                DistanceToPickupKm = distanceToPickup,
+                TimeToPickupMin = timeToPickup,
 
-                DistanceToDestinationKm = entity.DistanceToDestinationKm,
-                TimeToDestinationMin = entity.DurationMinToDestination,
+                DistanceToDestinationKm = distanceToDestination,
+                TimeToDestinationMin = timeToDestination,
 
                 Status = entity.Status,
 

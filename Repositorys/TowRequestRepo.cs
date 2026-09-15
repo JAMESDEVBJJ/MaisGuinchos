@@ -100,7 +100,8 @@ namespace MaisGuinchos.Repositorys
                 .Include(x => x.Client)
                 .Include(x => x.Driver)
                 .Where(x => x.Status != TowRequestStatus.Cancelled &&
-                            x.Status != TowRequestStatus.Accepted)
+                            x.Status != TowRequestStatus.Accepted && 
+                            x.Status != TowRequestStatus.Rejected)
                 .ToListAsync();
 
             return requests;

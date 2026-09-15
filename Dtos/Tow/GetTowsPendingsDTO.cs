@@ -11,6 +11,8 @@ namespace MaisGuinchos.Dtos.Tow
 
         public Guid ClientId { get; set; }
 
+        public string ClientPhone { get; set; }
+
         public string DriverName { get; set; }
 
         public Guid DriverId { get; set; }

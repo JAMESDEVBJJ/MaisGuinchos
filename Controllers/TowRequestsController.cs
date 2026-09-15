@@ -119,6 +119,23 @@ namespace MaisGuinchos.Controllers
             return Ok(result);
         }
 
+        [HttpPut("{id}/reject-tow")]
+        [Authorize(Roles = "Motorista")]
+        public async Task<IActionResult> RejectTowRequest(Guid id)
+        {
+            var result = await _towRequestService.RejectTowRequest(id);
+
+            return Ok(result);
+        }
+
+        [HttpPut("{id}/cancel-tow")]
+        [Authorize(Roles = "Cliente")]
+        public async Task<IActionResult> CancelTowRequest(Guid id)
+        {
+            var result = await _towRequestService.CancelTowRequest(id);
+            return Ok(result);
+        }
+
         [HttpPost("{id}/accept-tow")]
         [Authorize(Roles = "Motorista")]
         public async Task<IActionResult> AcceptTowRequest(Guid id)

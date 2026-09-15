@@ -112,6 +112,26 @@ namespace MaisGuinchos.Services
             };
         }
 
+        public async Task<GetUserStatusResponse> GetUserStatus(Guid id)
+        {
+            var user = await _userRepo.GetUserById(id);
+
+            if (user == null)
+            {
+                throw new NotFoundException("User");
+            }
+
+            if (user.Tipo != User.UserType.Motorista || user.Guincho == null)
+            {
+                throw new BadRequestException("User is not a driver.");
+            }
+
+            return new GetUserStatusResponse
+            {
+                Status = user.Guincho.Disponivel
+            };
+        }
+
         public async Task<UserAddedDTO?> AddUser(CreateUserDTO user)
         {
             var userExists = await _userRepo.GetUserByEmail(user.Email);
@@ -229,7 +249,7 @@ namespace MaisGuinchos.Services
 
             var passwordValid = _hasherUtil.Verify(userDto.Password, user.Password);
 
-            if ((!passwordValid && 0 != 0))
+            if (!passwordValid)
             {
                 throw new UnauthorizedAccessException("Invalid credentials.");
             }

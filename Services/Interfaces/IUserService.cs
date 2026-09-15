@@ -13,6 +13,8 @@ namespace MaisGuinchos.Services.Interfaces
 
         public Task<UserProfileResponseDTO> GetUserProfileById(Guid id);
 
+        public Task<GetUserStatusResponse> GetUserStatus(Guid id);
+
         public Task<UserAddedDTO> AddUser(CreateUserDTO user);
 
         public Task<LoginResponseDTO> LoginUser(UserLoginDTO user);
