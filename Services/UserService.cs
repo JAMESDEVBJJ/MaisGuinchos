@@ -251,7 +251,7 @@ namespace MaisGuinchos.Services
 
             if (!passwordValid)
             {
-                throw new UnauthorizedAccessException("Invalid credentials.");
+                throw new UnauthorizedAccessException("Credenciais inválidas.");
             }
 
             var token = _jwtService.GenerateToken(user);
