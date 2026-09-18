@@ -52,9 +52,14 @@ namespace MaisGuinchos.Controllers
         {
             var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
-            if (string.IsNullOrWhiteSpace(idClaim) || !Guid.TryParse(idClaim, out var clientId))
+            if (string.IsNullOrWhiteSpace(idClaim) || !Guid.TryParse(idClaim, out var userIdJwt))
             {
                 return Unauthorized();
+            }
+
+            if (userId != userIdJwt)
+            {
+                return Forbid();
             }
 
             var result = await _towRequestService.GetTowsRequestsByUserId(
