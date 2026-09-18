@@ -22,6 +22,18 @@ namespace MaisGuinchos.Controllers
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10)
         {
+            var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(idClaim) || !Guid.TryParse(idClaim, out var userIdJwt))
+            {
+                return Unauthorized();
+            }
+
+            if (userId != userIdJwt)
+            {
+                return Forbid();
+            }
+
             if (userId == Guid.Empty)
             {
                 return BadRequest("ID do usuário é inválido.");
