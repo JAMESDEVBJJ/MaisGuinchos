@@ -77,7 +77,7 @@ namespace MaisGuinchos.Repositorys
                         })
                         .FirstOrDefault(),
 
-                    Foto = u.Guincho!.Foto,
+                    Foto = u.Guincho!.FotoPath,
                     Placa = u.Guincho!.Placa,
                     Number = u.NumeroTelefone,
 
@@ -124,9 +124,9 @@ namespace MaisGuinchos.Repositorys
         }
 
         public async Task<List<MotoristaProxDTO>> GetMotoristasProximos(
-    Location userLocation,
-    List<FiltroOrdenacao>? filtros = null,
-    int? limit = null)
+            Location userLocation,
+            List<FiltroOrdenacao>? filtros = null,
+            int? limit = null)
         {
             var users = await GetAllMotoristasComLoc();
 
@@ -212,7 +212,7 @@ namespace MaisGuinchos.Repositorys
                     Stars = u.Estrelas,
                     Color = u.Guincho!.Cor,
                     Model = u.Guincho!.Modelo,
-                    Foto = u.Guincho!.Foto,
+                    Foto = u.Guincho!.FotoPath,
                     Placa = u.Guincho.Placa,
                     Number = u.NumeroTelefone
                 })
@@ -225,6 +225,19 @@ namespace MaisGuinchos.Repositorys
             _dbContext.SaveChanges();
 
             return user;
+        }
+
+        public async Task UpdateGuinchoPhotoAsync(Guid guinchoId, string photoPath)
+        {
+            var guincho = await _dbContext.Guinchos
+                .FirstOrDefaultAsync(g => g.Id == guinchoId);
+
+            if (guincho == null)
+                throw new Exception("Guincho não encontrado.");
+
+            guincho.FotoPath = photoPath;
+
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task<User> UpdateUser(User user)

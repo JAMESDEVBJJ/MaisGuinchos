@@ -25,8 +25,7 @@ namespace MaisGuinchos.Models
         [Required]
         public string Cor { get; set; }
 
-        [Url]
-        public string? Foto { get; set; }
+        public string? FotoPath { get; set; }
 
         public bool Disponivel { get; set; }
     }

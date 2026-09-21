@@ -65,7 +65,26 @@ builder.Services.AddAuthentication(options =>
         ),
         ClockSkew = TimeSpan.Zero
     };
+});
 
+var supabaseUrl = builder.Configuration["Supabase:Url"];
+var supabaseSecretKey = builder.Configuration["Supabase:SecretKey"];
+
+if (string.IsNullOrWhiteSpace(supabaseUrl))
+    throw new InvalidOperationException("Supabase URL não configurada.");
+
+if (string.IsNullOrWhiteSpace(supabaseSecretKey))
+    throw new InvalidOperationException("Supabase Secret Key não configurada.");
+
+builder.Services.AddSingleton<Supabase.Client>(provider =>
+{
+    var options = new Supabase.SupabaseOptions();
+
+    return new Supabase.Client(
+        supabaseUrl,
+        supabaseSecretKey,
+        options
+    );
 });
 
 var app = builder.Build();
@@ -74,8 +93,6 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-
-app.UseStaticFiles();
 
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseHttpsRedirection();

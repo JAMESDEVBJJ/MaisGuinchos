@@ -10,11 +10,16 @@ using MaisGuinchos.Services.Interfaces;
 using MaisGuinchos.utils;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.SignalR;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Webp;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.Security.Claims;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Formats.Webp;
 
 namespace MaisGuinchos.Services
 {
@@ -28,6 +33,8 @@ namespace MaisGuinchos.Services
         private readonly ITowTravelRepo _towTravelRepo;
         private readonly IHubContext<TowHub> _hubContext;
 
+        private readonly Supabase.Client _supabase;
+
         private readonly PasswordHasher _hasherUtil = new PasswordHasher();
 
         private const double DISTANCE_TO_ARRIVED_METERS = 200;
@@ -37,7 +44,8 @@ namespace MaisGuinchos.Services
             ILocationRepo locationRepo,
             IJwtService jwtService,
             ITravelService travelService,
-            IHubContext<TowHub> hubContext, ITowTravelRepo towTravelRepo)
+            IHubContext<TowHub> hubContext, ITowTravelRepo towTravelRepo,
+            Supabase.Client supabase)
         {
             _userRepo = userRepo;
             _mapsService = mapsService;
@@ -46,6 +54,7 @@ namespace MaisGuinchos.Services
             _towTravelRepo = towTravelRepo;
             _hubContext = hubContext;
             _travelService = travelService;
+            _supabase = supabase;
         }
 
         public List<User> GetAllUsers()
@@ -94,7 +103,7 @@ namespace MaisGuinchos.Services
                         Model = user.Guincho.Modelo,
                         Color = user.Guincho.Cor,
                         Plate = user.Guincho.Placa,
-                        Photo = user.Guincho.Foto
+                        PhotoPath = user.Guincho.FotoPath
                     }
                 };
             }
@@ -142,14 +151,22 @@ namespace MaisGuinchos.Services
             }
 
             if (!Enum.IsDefined(typeof(User.UserType), user.Tipo))
-            {
                 throw new ValidationException("User type invalid.");
+
+            if (user.Tipo == 1)
+            {
+                if (user.Guincho == null)
+                    throw new Exception("Guincho obrigatório para motorista.");
+
+                if (user.Guincho.Foto == null)
+                    throw new ValidationException("Foto do guincho é obrigatória.");
             }
 
             var hash = _hasherUtil.Hasher(user.Password);
 
             var userAdd = new User
             {
+                Id = Guid.NewGuid(),
                 Name = user.Name,
                 UserName = user.UserName,
                 Cpf = user.Cpf,
@@ -162,35 +179,34 @@ namespace MaisGuinchos.Services
 
             if (user.Tipo == 1)
             {
-                if (user.Guincho != null)
+                userAdd.Guincho = new Guincho
                 {
-                    if (user.Guincho.Foto == null)
-                        throw new ValidationException("Foto do guincho é obrigatória.");
-
-                    var photoUrl = await SavePhotoAsync(user.Guincho.Foto);
-
-                    userAdd.Guincho = new Guincho
-                    {
-                        Modelo = user.Guincho.Modelo,
-                        Cor = user.Guincho.Cor,
-                        Disponivel = true,
-                        Placa = user.Guincho.Placa,
-                        Foto = photoUrl
-                    };
-
-                }
-                else
-                {
-                    throw new Exception("Guincho obrigatório para motorista.");
-                }
+                    Modelo = user.Guincho!.Modelo,
+                    Cor = user.Guincho.Cor,
+                    Disponivel = true,
+                    Placa = user.Guincho.Placa,
+                    FotoPath = null
+                };
             }
-
 
             var userAdded = await _userRepo.AddUser(userAdd);
 
-            if (userAdded != null)
+            if (userAdded.Guincho != null && user.Guincho?.Foto != null)
             {
-                var userDTO = new UserAddedDTO
+                var photoPath = await UploadPhotoAsync(
+                    user.Guincho.Foto,
+                    userAdded.Id
+                );
+
+                await _userRepo.UpdateGuinchoPhotoAsync(
+                    userAdded.Guincho.Id,
+                    photoPath
+                );
+
+                userAdded.Guincho.FotoPath = photoPath;
+            }
+
+            var userDTO = new UserAddedDTO
                 {
                     UserName = userAdded.UserName,
                     Name = userAdded.Name,
@@ -199,43 +215,107 @@ namespace MaisGuinchos.Services
                     Tipo = (UserAddedDTO.UserType)userAdded.Tipo
                 };
 
-                if (userAdded.Guincho != null)
+            if (userAdded.Guincho != null)
+            {
+                userDTO.Guincho = new CreateGuinchoRequest
                 {
-                    userDTO.Guincho = new CreateGuinchoRequest
-                    {
-                        Cor = userAdded.Guincho.Cor,
-                        Modelo = userAdded.Guincho.Modelo,
-                        Placa = userAdded.Guincho.Placa
-                    };
-                }
-
-                return userDTO;
+                    Cor = userAdded.Guincho.Cor,
+                    Modelo = userAdded.Guincho.Modelo,
+                    Placa = userAdded.Guincho.Placa
+                };
             }
 
-            return null;
+            return userDTO;
         }
 
-        private async Task<string> SavePhotoAsync(IFormFile file)
+        private async Task<string> UploadPhotoAsync(
+            IFormFile file,
+            Guid userId)
         {
-            var uploadsFolder = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                "wwwroot",
-                "uploads"
-            );
+            const long maxFileSize = 5 * 1024 * 1024; //5 Mb
 
-            if (!Directory.Exists(uploadsFolder))
-                Directory.CreateDirectory(uploadsFolder);
-
-            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-
-            var filePath = Path.Combine(uploadsFolder, fileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            if (file == null || file.Length == 0)
             {
-                await file.CopyToAsync(stream);
+                throw new BadRequestException("A foto não pode estar vazia.");
             }
 
-            return $"/uploads/{fileName}";
+            if (file.Length > maxFileSize)
+            {
+                throw new BadRequestException("A foto deve ter no máximo 5 MB.");
+            }
+
+            var allowedContentTypes = new[] 
+            {
+                "image/jpeg",
+                "image/png",
+                "image/webp"
+            };
+
+            if (string.IsNullOrWhiteSpace(file.ContentType) || !allowedContentTypes.Contains(file.ContentType.ToLowerInvariant()))
+            {
+                throw new ValidationException("Formato de imagem inválido. Use JPG, PNG ou WEBP.");
+            }
+
+            try
+            {
+                await using var inputStream = file.OpenReadStream();
+
+                using var image = await Image.LoadAsync(inputStream);
+
+                if (image.Width > 6000 || image.Height > 6000)
+                {
+                    throw new ValidationException(
+                        "A imagem possui dimensões muito grandes.");
+                }
+
+                image.Mutate(x => x.AutoOrient());
+
+                if (image.Width > 800 || image.Height > 800)
+                {
+                    image.Mutate(x => x.Resize(new ResizeOptions
+                    {
+                        Size = new Size(800, 800),
+                        Mode = ResizeMode.Max
+                    }));
+                }
+
+                await using var outputStream = new MemoryStream();
+
+                await image.SaveAsWebpAsync(
+                    outputStream,
+                    new WebpEncoder
+                    {
+                        Quality = 90
+                    });
+
+                var imageBytes = outputStream.ToArray();
+
+                var filePath = $"drivers/{userId}/{Guid.NewGuid()}.webp";
+
+                await _supabase.Storage
+                    .From("Perfil-Photo-MaisGuinchos")
+                    .Upload(
+                        imageBytes,
+                        filePath,
+                        new Supabase.Storage.FileOptions
+                        {
+                            ContentType = "image/webp",
+                            CacheControl = "31536000",
+                            Upsert = false
+                        });
+
+                return filePath;
+            }
+            catch (UnknownImageFormatException)
+            {
+                throw new ValidationException(
+                    "O arquivo enviado não é uma imagem válida.");
+            }
+            catch (InvalidImageContentException)
+            {
+                throw new ValidationException(
+                    "A imagem enviada está corrompida ou é inválida.");
+            }
         }
 
         public async Task<LoginResponseDTO> LoginUser(UserLoginDTO userDto)
@@ -313,8 +393,8 @@ namespace MaisGuinchos.Services
             {
                 if (userUpd.Photo != null)
                 {
-                    var photoUrl = await SavePhotoAsync(userUpd.Photo);
-                    user.Guincho!.Foto = photoUrl;
+                    var photoUrl = await UploadPhotoAsync(userUpd.Photo, id);
+                    user.Guincho!.FotoPath = photoUrl;
                 }
                 if (userUpd.Guincho != null)
                 {
@@ -341,7 +421,7 @@ namespace MaisGuinchos.Services
                     Model = user.Guincho.Modelo,
                     Color = user.Guincho.Cor,
                     Plate = user.Guincho.Placa,
-                    Photo = user.Guincho.Foto
+                    PhotoPath = user.Guincho.FotoPath
                 } : null,
             };
         }

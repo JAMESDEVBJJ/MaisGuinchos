@@ -23,6 +23,8 @@ namespace MaisGuinchos.Repositorys.Interfaces
 
         public Task<User> AddUser(User user);
 
+        public Task UpdateGuinchoPhotoAsync(Guid guinchoId, string photoPath);
+
         public Task<User> UpdateUser(User user);
         public Task Save();
     }

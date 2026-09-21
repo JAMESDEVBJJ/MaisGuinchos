@@ -200,7 +200,7 @@ namespace MaisGuinchos.Services
                     Color = entity.Driver.Guincho.Cor!,
                     Plate = entity.Driver.Guincho.Placa!
                 },
-                DriverPhoto = entity.Driver.Guincho.Foto ?? string.Empty,
+                DriverPhoto = entity.Driver.Guincho.FotoPath ?? string.Empty,
             };
         }
 
