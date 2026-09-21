@@ -9,7 +9,7 @@ O sistema atende **motoristas, clientes e empresas**, permitindo:
 - Calcular rota e viagem  
 - Criar solicitações de reboque  
 - Motoristas aceitarem ou enviarem contra propostas
-- Rota da viagem e propostas em tempo real
+- Pedido e corrida controlada por estados, com contra proposta e rota em tempo real
 
 ---
 
@@ -105,16 +105,23 @@ O token deve ser enviado no header:
 ```
 Authorization: Bearer {seu_token}
 ```
+## 🌐 Deploy
 
-### ⚙️ Configuração JWT
-**No arquivo appsettings.json:**
+O backend do **MaisGuinchos** está hospedado na **Railway**.
 
-```
-"Jwt": {
-  "Key": "sua-chave-secreta",
-  "Issuer": "MaisGuinchos"
-}
-```
+**API em produção:**
+
+https://maisguinchos-production.up.railway.app
+
+## ⚙️ Configuração
+
+As informações sensíveis, como:
+
+* Connection String do PostgreSQL
+* Chave JWT
+* Credenciais do Supabase
+
+são configuradas por meio de variáveis de ambiente e não são armazenadas no repositório.
 
 ### 🔄 Comunicação em tempo real
 
