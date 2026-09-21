@@ -18,6 +18,6 @@ namespace MaisGuinchos.Dtos.Guincho
         )]
         public string? Plate { get; set; }
 
-        public string? Photo { get; set; }
+        public string? PhotoPath { get; set; }
     }
 }
